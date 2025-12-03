@@ -1,0 +1,15 @@
+﻿services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cleaning_platform_db
+    environment:
+      POSTGRES_DB: cleaning_platform_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpassword123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
