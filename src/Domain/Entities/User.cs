@@ -1,6 +1,6 @@
 namespace Domain.Entities;
 
-public class TimeSLot
+public class User
 {
     public Guid Id { get; } // уникальный id пользователя
     public string Email { get; set; } = default!; // инициализация что бы подавить предупреждение, компилятор знает
