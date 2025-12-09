@@ -1,6 +1,10 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace Api.Controllers.Abstractions;
 
-public class BaseController
+[ApiController]
+[Produces("application/json")]
+public abstract class BaseController : ControllerBase
 {
     
 }

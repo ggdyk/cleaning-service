@@ -1,6 +1,12 @@
+using Api.Controllers.Abstractions;
+using Microsoft.AspNetCore.Mvc;
+
 namespace Api.Controllers;
 
-public class TestController
+[Route("api/test")]
+public class TestController : BaseController
 {
-    
+    [HttpGet("run")]
+    public IActionResult Run()
+        => Ok();
 }
