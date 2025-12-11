@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class Review
+public class Review : BaseEntity
 {
-    public int Id { get; set; } // Уникальный индификатор отзыва;
     public int UserId { get; set; } // Идентификатор пользователя;
     public int? OrderId { get; set; } // Индентификатор заказа, к которому относится отзыв;
     public string AuthorName { get; set; } // Отображаемое имя автора отзыва;

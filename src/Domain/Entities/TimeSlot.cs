@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class TimeSlot
+public class TimeSlot : BaseEntity
 {
-    public Guid Id { get; set; } // айди слота времени
     public DateTime Date { get; set; } 
     public TimeOnly Start { get; set; }
     public TimeOnly End { get; set; }
