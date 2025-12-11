@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class CallBackRequest
+public class CallBackRequest : BaseEntity
 {
-    public int Id { get; set; } // Уникальный идентификатор заявки
     public string Name { get; set; } // Имя клиента, запросившего звонок 
     public string Phone { get; set; } // Номер телефона клиента 
     public string PreferredTime { get; set; } // Удобное для клиента время звонков

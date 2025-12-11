@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class FAQ
+public class FAQ : BaseEntity
 {
-    public int Id { get; set; } // Уникальный идентификатор вопрос-ответ в системе;
     public string QuestionRu { get; set; } // Текст вопроса на русском языке;
     public string QuestionKk { get; set; } // Текст вопроса на казахском языке;
     public string QuestionEn { get; set; } // Текст вопроса на английский языке;
