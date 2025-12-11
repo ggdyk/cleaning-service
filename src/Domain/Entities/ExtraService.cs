@@ -1,0 +1,12 @@
+using Domain.Common;
+
+namespace Domain.Entities;
+
+public class ExtraService : BaseEntity
+{
+    public string Name { get; set; } = default!; // название услуги
+    public string Description { get; set; } = default!; // описание услуги
+    public decimal Price { get; set; } // цена услуги
+    public string Unit { get; set; } = default!; // ед измерения шт, квм 
+    public bool IsActive { get; set; } // признак активности услуги
+}
