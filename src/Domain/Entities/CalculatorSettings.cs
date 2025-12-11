@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class CalculatorSettings
+public class CalculatorSettings : BaseEntity
 {
-    public int Id { get; set; } // Уникальный идентификатор набора настроек калькулятора
     public int CityId { get; set; } // Идентификатор города, для которого действуют эти настройки
     public decimal PricePerSquareMeter { get; set; } // Коэффициент (цена) за один квадратный метр
     public decimal PricePerBathroom { get; set; } // Коэффициент (цена) за один санузел

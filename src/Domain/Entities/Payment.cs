@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class Payment
+public class Payment : BaseEntity
 {
-    public int Id { get; set; } // Уникальный идентификатор платежа;
     public int OrderId { get; set; } // Идентификатор заказа;
     public decimal Amount { get; set; } // Сумма платежа;
     public string Status { get; set; } // Статус платежа;

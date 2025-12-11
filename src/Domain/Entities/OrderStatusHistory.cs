@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class OrderStatusHistory
+public class OrderStatusHistory : BaseEntity
 {
-    public int Id { get; set; } // Уникальный индификатор записи;
     public int OrderId { get; set; } // Индфикатор заказа;
     public string PreviousStatus { get; set; } // Предыдущий статус заказа;
     public string NewStatus { get; set; } // Новый статус заказа;

@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class ExtraService
+public class ExtraService : BaseEntity
 {
-    public Guid Id { get; set; } // id доп услуги
     public string Name { get; set; } = default!; // название услуги
     public string Description { get; set; } = default!; // описание услуги
     public decimal Price { get; set; } // цена услуги
