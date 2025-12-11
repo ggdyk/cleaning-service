@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class OrderExtraService
+public class OrderExtraService : BaseEntity
 {
-    public int Id { get; set; } // Уникальный индификатор 
     public int OrderId { get; set; } // Индификатор заказа
     public int ExtraServiceId { get; set; } // Индификатор доп. услуги. Ссылка на оригинальную услугу;
     public string Name { get; set; } // Название услуги 
