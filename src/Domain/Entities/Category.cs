@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class Category
+public class Category : BaseEntity
 {
-    public Guid Id { get; set; } // айди категории услуг
     public string Name { get; set; } = default!; // название категории
     public string Description { get; set; } = default!; // описание категории
     public string IconUrl { get; set; } = default!; // изображение

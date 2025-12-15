@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class Page
+public class Page : BaseEntity
 {
-    public int Id { get; set; } // Уникальный идентификатор страницы в системе
     public string Slug { get; set; } // Код страницы (URL-friendly идентификатор)
     public string TitleRu { get; set; } // Заголовок страницы на русском языке
     public string TitleKk { get; set; } // Заголовок страницы на казахском языке
