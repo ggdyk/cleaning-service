@@ -1,6 +1,6 @@
 namespace Domain.Enums;
 
-public class UserRole
+public enum UserRole
 {
     Client = 1,
     Cleaner = 2,
