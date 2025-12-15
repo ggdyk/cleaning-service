@@ -1,8 +1,9 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class User
+public class User : BaseEntity
 {
-    public Guid Id { get; } // уникальный id пользователя
     public string Email { get; set; } = default!; // инициализация что бы подавить предупреждение, компилятор знает
                                                   // что потом будет значение
     public string PasswordHash { get; set; } = default!; // хеш пароля, а не сам пароль

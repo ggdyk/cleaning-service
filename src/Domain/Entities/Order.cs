@@ -1,12 +1,13 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class Order
+public class Order : BaseEntity
 {
-    public Guid Id { get; set; } // id заказа
     public string OrderNumber { get; set; } = default!; // человекачитаемый номер заказа
-    public Guid UserId { get; set; } // айди клиента
-    public Guid CityId { get; set; } 
-    public Guid TimeSlotId { get; set; } // айди выбранного времени слота 
+    public int UserId { get; set; } // айди клиента
+    public int CityId { get; set; } 
+    public int TimeSlotId { get; set; } // айди выбранного времени слота 
 
     public string Street { get; set; } = default!;
     public string House { get; set; } = default!;
