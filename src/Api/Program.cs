@@ -1,8 +1,12 @@
+using Application;
 using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Регистрация Infrastructure (включая DbContext)
+// Регистрация Application Layer
+builder.Services.AddApplication();
+
+// Регистрация Infrastructure Layer (включая DbContext)
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add services to the container
