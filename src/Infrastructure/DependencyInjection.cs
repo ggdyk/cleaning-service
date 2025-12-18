@@ -1,4 +1,7 @@
+using Application.Interfaces;
 using Infrastructure.Persistence;
+using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +14,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // DbContext
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(
@@ -24,7 +28,13 @@ public static class DependencyInjection
                         errorCodesToAdd: null);
                 });
         });
-        
+
+        // Repositories
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        // Services
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+
         return services;
     }
 }
