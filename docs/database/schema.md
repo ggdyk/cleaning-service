@@ -211,3 +211,20 @@ erDiagram
     CATEGORIES ||--o{ SERVICES : includes
     SERVICES ||--o{ ORDER_SERVICES : applied
     ORDERS ||--o{ ORDER_SERVICES : contains
+
+## Services
+
+| Поле | Тип | Описание |
+|-----|----|---------|
+| id | int | Идентификатор |
+| category_id | uuid | Категория |
+| name_ru | varchar(255) | Название (RU) |
+| name_en | varchar(255) | Название (EN) |
+| description_ru | text | Описание (RU) |
+| description_en | text | Описание (EN) |
+| base_price | numeric(10,2) | Цена |
+| unit | varchar(50) | Ед. измерения |
+| min_area | double | Минимальная площадь |
+| duration_minutes | int | Длительность |
+| sort_order | int | Сортировка |
+| is_active | boolean | Активность |
