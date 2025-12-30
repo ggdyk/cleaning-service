@@ -2,7 +2,7 @@ using Application;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-//using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,33 +89,33 @@ builder.Services.AddControllers();
 
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen(c =>
-// {
-//     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//     {
-//         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-//         Name = "Authorization",
-//         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-//         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-//         Scheme = "Bearer"
-//     });
-//
-//     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-//     {
-//         {
-//             new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//             {
-//                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
-//                 {
-//                     Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-//                     Id = "Bearer"
-//                 }
-//             },
-//             new string[] { }
-//         }
-//     });
-// });
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Введите JWT токен в формате: Bearer {your token}"
+    });
 
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 //
 // 4️⃣ СБОРКА ПРИЛОЖЕНИЯ
@@ -129,11 +129,11 @@ var app = builder.Build();
 //
 
 // Swagger включаем только не в Production
-// if (!app.Environment.IsProduction())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
+if (!app.Environment.IsProduction())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 // Перенаправление HTTP → HTTPS
 app.UseHttpsRedirection();
