@@ -43,12 +43,14 @@ public class RefreshTokenRepository : IRefreshTokenRepository
     public async Task RevokeAllByUserIdAsync(int userId)
     {
         var tokens = await _context.Set<RefreshToken>()
+            .AsNoTracking()  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
             .Where(rt => rt.UserId == userId && !rt.IsRevoked)
             .ToListAsync();
 
         foreach (var token in tokens)
         {
             token.Revoke();
+            _context.Set<RefreshToken>().Update(token);  // ← Явно помечаем как обновлённый
         }
 
         await _context.SaveChangesAsync();
