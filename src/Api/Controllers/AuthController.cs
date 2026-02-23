@@ -27,21 +27,9 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<RegisterResponse>> Register([FromBody] RegisterRequest request)
     {
-        try
-        {
-            var command = new RegisterUserCommand(request);
-            var response = await _mediator.Send(command);
-            
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var command = new RegisterUserCommand(request);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
     /// <summary>
@@ -50,17 +38,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        try
-        {
-            var command = new LoginCommand(request);
-            var response = await _mediator.Send(command);
-            
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { error = ex.Message });
-        }
+        var command = new LoginCommand(request);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
     /// <summary>
@@ -69,17 +49,9 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<ActionResult<RefreshTokenResponse>> Refresh([FromBody] RefreshTokenRequest request)
     {
-        try
-        {
-            var command = new RefreshTokenCommand(request);
-            var response = await _mediator.Send(command);
-            
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { error = ex.Message });
-        }
+        var command = new RefreshTokenCommand(request);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
     /// <summary>
@@ -89,24 +61,14 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<ActionResult> Logout()
     {
-        try
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                ?? User.FindFirst("sub")?.Value;
-            
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
-            {
-                return Unauthorized(new { error = "Не удалось определить пользователя" });
-            }
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
 
-            var command = new LogoutCommand(userId);
-            await _mediator.Send(command);
-            
-            return Ok(new { message = "Успешный выход" });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            throw new UnauthorizedAccessException("Не удалось определить пользователя");
+
+        var command = new LogoutCommand(userId);
+        await _mediator.Send(command);
+        return Ok(new { message = "Успешный выход" });
     }
 }

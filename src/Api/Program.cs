@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -144,6 +145,8 @@ app.UseAuthentication();
 
 // Подключаем авторизацию
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Маппинг контроллеров
 app.MapControllers();
