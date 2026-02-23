@@ -28,7 +28,7 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.Property(x => x.SortOrder).IsRequired();
         builder.Property(x => x.IsActive).IsRequired();
 
-        // 🔹 Name (LocalizedString)
+        // Name (LocalizedString) — HasData для owned type вызывается внутри OwnsOne
         builder.OwnsOne(x => x.Name, name =>
         {
             name.Property(n => n.Ru)
@@ -40,9 +40,14 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
                 .HasColumnName("name_en")
                 .HasMaxLength(255)
                 .IsRequired();
+
+            name.HasData(
+                new { ServiceId = 1, Ru = "Генеральная уборка",     En = "General cleaning"     },
+                new { ServiceId = 2, Ru = "Поддерживающая уборка",  En = "Maintenance cleaning" }
+            );
         });
 
-        // 🔹 Description (LocalizedString)
+        // Description (LocalizedString)
         builder.OwnsOne(x => x.Description, desc =>
         {
             desc.Property(d => d.Ru)
@@ -52,20 +57,23 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
             desc.Property(d => d.En)
                 .HasColumnName("description_en")
                 .IsRequired();
+
+            desc.HasData(
+                new { ServiceId = 1, Ru = "Полная уборка помещения", En = "Full cleaning of the premises" },
+                new { ServiceId = 2, Ru = "Регулярная уборка",       En = "Regular cleaning service"     }
+            );
         });
+
+        // Seed data — только скалярные свойства родительской сущности
         builder.HasData(
             new
             {
                 Id = 1,
                 CategoryId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                Name_Ru = "Генеральная уборка",
-                Name_En = "General cleaning",
-                Description_Ru = "Полная уборка помещения",
-                Description_En = "Full cleaning of the premises",
                 BasePrice = 1000m,
                 Unit = "service",
                 MinArea = (double?)null,
-                DurationMinutes = 120,
+                DurationMinutes = (int?)120,
                 SortOrder = 1,
                 IsActive = true
             },
@@ -73,14 +81,10 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
             {
                 Id = 2,
                 CategoryId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                Name_Ru = "Поддерживающая уборка",
-                Name_En = "Maintenance cleaning",
-                Description_Ru = "Регулярная уборка",
-                Description_En = "Regular cleaning service",
                 BasePrice = 500m,
                 Unit = "sqm",
-                MinArea = 30.0,
-                DurationMinutes = 60,
+                MinArea = (double?)30.0,
+                DurationMinutes = (int?)60,
                 SortOrder = 2,
                 IsActive = true
             }
