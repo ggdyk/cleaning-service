@@ -70,7 +70,7 @@ public sealed class ExceptionHandlingMiddleware
             _logger.LogError(exception, "Необработанное исключение: {Message}", exception.Message);
         else
             _logger.LogWarning("Клиентская ошибка {StatusCode}: {Message}", statusCode, exception.Message);
-
+        
         var response = new ApiErrorResponse
         {
             StatusCode = statusCode,
