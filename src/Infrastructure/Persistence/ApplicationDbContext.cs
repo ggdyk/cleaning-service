@@ -15,6 +15,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Service> Services { get; set; }
 
+    // Content
+    public DbSet<FAQ> FAQs { get; set; }
+
     // Orders
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderService> OrderServices { get; set; }
