@@ -132,6 +132,28 @@ public class Order : BaseEntity
     }
 
     // -------------------------------------------------------------------------
+    // Методы управления составом заказа
+    // -------------------------------------------------------------------------
+
+    /// <summary>Добавить основную услугу в заказ. Допустимо только при создании (статус New).</summary>
+    public void AddService(OrderService service)
+    {
+        if (service is null)
+            throw new ArgumentNullException(nameof(service));
+
+        _services.Add(service);
+    }
+
+    /// <summary>Добавить дополнительную услугу в заказ. Допустимо только при создании (статус New).</summary>
+    public void AddExtraService(OrderExtraService extraService)
+    {
+        if (extraService is null)
+            throw new ArgumentNullException(nameof(extraService));
+
+        _extraServices.Add(extraService);
+    }
+
+    // -------------------------------------------------------------------------
     // Методы смены статуса (бизнес-логика)
     // -------------------------------------------------------------------------
 
