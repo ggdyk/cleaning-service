@@ -36,14 +36,19 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
                 .HasMaxLength(255)
                 .IsRequired();
 
+            name.Property(n => n.Kk)
+                .HasColumnName("name_kk")
+                .HasMaxLength(255)
+                .IsRequired();
+
             name.Property(n => n.En)
                 .HasColumnName("name_en")
                 .HasMaxLength(255)
                 .IsRequired();
 
             name.HasData(
-                new { ServiceId = 1, Ru = "Генеральная уборка",     En = "General cleaning"     },
-                new { ServiceId = 2, Ru = "Поддерживающая уборка",  En = "Maintenance cleaning" }
+                new { ServiceId = 1, Ru = "Генеральная уборка",    Kk = "Жалпы жинау",           En = "General cleaning"     },
+                new { ServiceId = 2, Ru = "Поддерживающая уборка", Kk = "Қолдаушы жинау",         En = "Maintenance cleaning" }
             );
         });
 
@@ -54,13 +59,17 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
                 .HasColumnName("description_ru")
                 .IsRequired();
 
+            desc.Property(d => d.Kk)
+                .HasColumnName("description_kk")
+                .IsRequired();
+
             desc.Property(d => d.En)
                 .HasColumnName("description_en")
                 .IsRequired();
 
             desc.HasData(
-                new { ServiceId = 1, Ru = "Полная уборка помещения", En = "Full cleaning of the premises" },
-                new { ServiceId = 2, Ru = "Регулярная уборка",       En = "Regular cleaning service"     }
+                new { ServiceId = 1, Ru = "Полная уборка помещения", Kk = "Үй-жайды толық жинау",  En = "Full cleaning of the premises" },
+                new { ServiceId = 2, Ru = "Регулярная уборка",       Kk = "Тұрақты жинау қызметі", En = "Regular cleaning service"     }
             );
         });
 

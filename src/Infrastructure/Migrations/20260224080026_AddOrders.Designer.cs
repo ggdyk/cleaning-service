@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260224080026_AddOrders")]
+    partial class AddOrders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,63 +24,6 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Domain.Entities.FAQ", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AnswerEn")
-                        .IsRequired()
-                        .HasMaxLength(5000)
-                        .HasColumnType("character varying(5000)");
-
-                    b.Property<string>("AnswerKk")
-                        .IsRequired()
-                        .HasMaxLength(5000)
-                        .HasColumnType("character varying(5000)");
-
-                    b.Property<string>("AnswerRu")
-                        .IsRequired()
-                        .HasMaxLength(5000)
-                        .HasColumnType("character varying(5000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("QuestionEn")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("QuestionKk")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("QuestionRu")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive", "SortOrder");
-
-                    b.ToTable("FAQs", (string)null);
-                });
 
             modelBuilder.Entity("Domain.Entities.Order", b =>
                 {
@@ -463,11 +409,6 @@ namespace Infrastructure.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("description_en");
 
-                            b1.Property<string>("Kk")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("description_kk");
-
                             b1.Property<string>("Ru")
                                 .IsRequired()
                                 .HasColumnType("text")
@@ -485,14 +426,12 @@ namespace Infrastructure.Migrations
                                 {
                                     ServiceId = 1,
                                     En = "Full cleaning of the premises",
-                                    Kk = "Үй-жайды толық жинау",
                                     Ru = "Полная уборка помещения"
                                 },
                                 new
                                 {
                                     ServiceId = 2,
                                     En = "Regular cleaning service",
-                                    Kk = "Тұрақты жинау қызметі",
                                     Ru = "Регулярная уборка"
                                 });
                         });
@@ -507,12 +446,6 @@ namespace Infrastructure.Migrations
                                 .HasMaxLength(255)
                                 .HasColumnType("character varying(255)")
                                 .HasColumnName("name_en");
-
-                            b1.Property<string>("Kk")
-                                .IsRequired()
-                                .HasMaxLength(255)
-                                .HasColumnType("character varying(255)")
-                                .HasColumnName("name_kk");
 
                             b1.Property<string>("Ru")
                                 .IsRequired()
@@ -532,14 +465,12 @@ namespace Infrastructure.Migrations
                                 {
                                     ServiceId = 1,
                                     En = "General cleaning",
-                                    Kk = "Жалпы жинау",
                                     Ru = "Генеральная уборка"
                                 },
                                 new
                                 {
                                     ServiceId = 2,
                                     En = "Maintenance cleaning",
-                                    Kk = "Қолдаушы жинау",
                                     Ru = "Поддерживающая уборка"
                                 });
                         });
