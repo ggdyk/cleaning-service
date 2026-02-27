@@ -63,3 +63,21 @@ cleaning-service/
 
 ## Middleware
 - `ExceptionHandlingMiddleware` — глобальная обработка исключений (NotFoundException, BusinessRuleException, ForbiddenException)
+
+## Известные решения и подводные камни
+
+### Конфликт имён: namespace Features vs тип Domain.Entities
+
+**Проблема.** При создании CQRS-фичи для сущности, если namespace папки совпадает с именем Domain-типа, компилятор не может разрешить вызов статического метода.
+
+Конкретный случай: папка `Application/Features/FAQ/Admin/CreateFAQ/` создаёт namespace `Application.Features.FAQ.Admin.CreateFAQ`. Внутри хендлера вызов `FAQ.Create(...)` становится неоднозначным — компилятор ищет `FAQ` в текущем namespace и находит папку `Features/FAQ`, а не `Domain.Entities.FAQ`.
+
+**Решение.** Использовать alias в using:
+```csharp
+using FaqEntity = Domain.Entities.FAQ;
+
+// затем в коде:
+var faq = FaqEntity.Create(...);
+```
+
+**Правило.** Если имя Bounded Context совпадает с именем Entity (FAQ, Order, Payment и т.д.), и Feature находится во вложенном namespace этого контекста — всегда использовать alias для Domain-типа в хендлерах создания.

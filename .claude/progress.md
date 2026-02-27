@@ -27,12 +27,14 @@
 - [x] `OrderStatus` enum (New → Assigned → InProgress → Completed | Cancelled)
 - [x] EF конфигурации: Order, OrderService, OrderExtraService, OrderStatusHistory
 - [x] Миграция `AddOrders` (20260224080026) — применена, таблицы в БД созданы
-- [x] `IOrderRepository` + `OrderRepository` (GetByIdAsync с Include, AddAsync)
+- [x] `IOrderRepository` + `OrderRepository` (GetByIdAsync с Include, GetByClientIdAsync, AddAsync)
 - [x] CQRS: `CreateOrder` — Command + Handler + Validator
-- [x] DTOs: `CreateOrderRequest`, `CreateOrderResponse`
-- [x] `OrdersController` — `POST /api/orders` (требует JWT, ClientId из токена)
-- [ ] CQRS Features: GetOrder, AssignCleaner, ChangeStatus, CancelOrder
-- [ ] `GET /api/orders/{id}` и другие endpoints
+- [x] CQRS: `GetMyOrders` — Query + Handler (список заказов пользователя)
+- [x] CQRS: `GetOrderById` — Query + Handler (детали, проверка владельца)
+- [x] DTOs: `CreateOrderRequest/Response`, `OrderSummaryResponse`, `OrderDetailsResponse`
+- [x] `OrdersController` — `POST /api/orders`, `GET /api/orders`, `GET /api/orders/{id}`
+- [ ] CQRS Features: AssignCleaner, ChangeStatus, CancelOrder
+- [ ] Endpoints для менеджера и уборщика
 
 ### Payment (Supporting Context) ❌ — не начат
 - [ ] `Payment` entity (есть в Domain, без конфигурации)
@@ -43,25 +45,72 @@
 - [ ] Email-уведомления по Order событиям
 - [ ] Domain Events публикация из Orders
 
-### Content (Supporting Context) ❌ — не начат
-- [ ] Entities: `Page`, `FAQ`, `Review`, `CallBackRequest` (есть в Domain)
-- [ ] CQRS + Controllers
+### Content (Supporting Context) 🔄 — в процессе
+- [x] `FAQ` entity — переписан по стандарту (private set, Create, Update, Activate/Deactivate)
+- [x] `LocalizedString` Value Object — добавлен казахский язык (Kk), перегрузка Create(ru, en)
+- [x] `FAQConfiguration` — EF-конфигурация, индекс (IsActive, SortOrder)
+- [x] Миграция `AddFAQs` (20260224193636) — таблица FAQs создана в БД
+- [x] `IFAQRepository` + `FAQRepository` (GetActiveAsync, GetAllAsync, GetByIdAsync, Add, Update, Delete)
+- [x] CQRS: `GetFAQs` — публичный список активных FAQ
+- [x] CQRS: `GetAllFAQs` — все FAQ для Admin/Manager
+- [x] CQRS: `CreateFAQ` — Command + Handler + Validator
+- [x] CQRS: `UpdateFAQ` — Command + Handler + Validator
+- [x] CQRS: `DeleteFAQ` — Command + Handler
+- [x] `FAQController` — GET /api/faq (публичный), CRUD /api/faq/admin/* (Admin/Manager)
+- [ ] `Page`, `Review`, `CallBackRequest` — конфигурации и миграции
+- [ ] CQRS + Controllers для Page, Review, CallBackRequest
 
 ### Admin (Generic Context) ❌ — не начат
 - [ ] Статистика, управление пользователями
 - [ ] Controller
 
 ## Миграции
-| Дата       | Имя              | Описание                      |
-|------------|------------------|-------------------------------|
-| 2025-12-30 | InitialWithServices | Начальная схема + сервисы   |
-| 2026-02-23 | AddServices      | Дополнения к Catalog          |
-| 2026-02-24 | AddOrders        | Схема Orders                  |
+| Дата       | Имя                 | Описание                            |
+|------------|---------------------|-------------------------------------|
+| 2025-12-30 | InitialWithServices | Начальная схема + сервисы           |
+| 2026-02-23 | AddServices         | Seed-данные для Catalog             |
+| 2026-02-24 | AddOrders           | Схема Orders                        |
+| 2026-02-24 | AddFAQs             | Таблица FAQs + поля _kk для Services|
+
+## Сделано сегодня (2026-02-27)
+
+### Задача: Создать endpoints для FAQ (phase-4, priority-medium)
+Полная вертикаль от репозитория до контроллера:
+
+- `IFAQRepository` — интерфейс в Application/Interfaces
+- `FAQRepository` — реализация: GetActiveAsync, GetAllAsync, GetByIdAsync, Add, Update, Delete
+- DTOs: `FaqResponse`, `CreateFaqRequest`, `UpdateFaqRequest`
+- CQRS (5 features):
+  - `GetFAQs` — публичный, только активные, сортировка по SortOrder
+  - `GetAllFAQs` — все записи для Admin/Manager
+  - `CreateFAQ` — с FluentValidation валидатором
+  - `UpdateFAQ` — с FluentValidation валидатором
+  - `DeleteFAQ`
+- `FAQController` — 5 endpoints (см. таблицу ниже)
+- Регистрация `IFAQRepository → FAQRepository` в Infrastructure/DependencyInjection.cs
+- Сборка: **0 ошибок**
+
+#### Endpoints FAQ
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| GET | /api/faq | Публичный |
+| GET | /api/faq/admin | Admin, Manager |
+| POST | /api/faq/admin | Admin, Manager |
+| PUT | /api/faq/admin/{id} | Admin, Manager |
+| DELETE | /api/faq/admin/{id} | Admin, Manager |
+
+### Проблемы, возникшие при реализации
+
+1. **Конфликт имён namespace vs тип** — папка `Features/FAQ/Admin/CreateFAQ` создала конфликт с `Domain.Entities.FAQ.Create`. Компилятор не мог разрешить `FAQ.Create(...)`. Решение: alias `using FaqEntity = Domain.Entities.FAQ;`
+
+2. **Неверная сигнатура `NotFoundException`** — в хендлерах использовался `new NotFoundException("сообщение")`, но конструктор принимает `(string entityName, object entityId)`. Исправлено на `new NotFoundException("FAQ", command.Id)`.
 
 ## Известные проблемы
-- В Domain-сущностях `Page`, `FAQ`, `CallBackRequest`, `Review`, `Payment` — CS8618 предупреждения
+- Таблица `Services` отсутствует в БД — была потеряна при пересоздании базы.
+  Колонки `name_kk`/`description_kk` из миграции `AddFAQs` будут применены при восстановлении.
+- В Domain-сущностях `Page`, `CallBackRequest`, `Review`, `Payment` — CS8618 предупреждения
   (nullable свойства без инициализации). Существовали до текущей работы, не критично.
 
 ## Текущий фокус
-> **Следующий шаг**: Дореализовать оставшиеся CQRS-фичи Orders контекста:
-> `GetOrder` → `AssignCleaner` → `ChangeStatus` → `CancelOrder` → endpoints в `OrdersController`
+> **Следующий шаг**: CQRS для Orders — `AssignCleaner` → `ChangeStatus` → `CancelOrder`
+> либо продолжить Content — `Page`, `Review`, `CallBackRequest` (конфигурации + миграции + CQRS)
