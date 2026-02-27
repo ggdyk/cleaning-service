@@ -2,7 +2,7 @@ namespace Application.DTOs.Services;
 
 public class CreateServiceRequest
 {
-    public Guid CategoryId { get; init; }
+    public int CategoryId { get; init; }
     public string NameRu { get; init; } = string.Empty;
     public string NameEn { get; init; } = string.Empty;
     public string DescriptionRu { get; init; } = string.Empty;

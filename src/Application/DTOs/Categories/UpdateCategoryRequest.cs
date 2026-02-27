@@ -1,16 +1,14 @@
-namespace Application.DTOs.Services;
+namespace Application.DTOs.Categories;
 
-public class UpdateServiceRequest
+public class UpdateCategoryRequest
 {
-    public int CategoryId { get; init; }
     public string NameRu { get; init; } = string.Empty;
+    public string NameKk { get; init; } = string.Empty;
     public string NameEn { get; init; } = string.Empty;
     public string DescriptionRu { get; init; } = string.Empty;
+    public string DescriptionKk { get; init; } = string.Empty;
     public string DescriptionEn { get; init; } = string.Empty;
-    public decimal BasePrice { get; init; }
-    public string Unit { get; init; } = string.Empty;
-    public double? MinArea { get; init; }
-    public int? DurationMinutes { get; init; }
+    public string? IconUrl { get; init; }
     public int SortOrder { get; init; }
     public bool IsActive { get; init; }
 }
