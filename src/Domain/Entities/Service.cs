@@ -100,6 +100,42 @@ public class Service : BaseEntity
     }
 
     /// <summary>
+    /// Обновление всех полей услуги
+    /// </summary>
+    public void Update(
+        Guid categoryId,
+        string nameRu,
+        string nameEn,
+        string descriptionRu,
+        string descriptionEn,
+        decimal basePrice,
+        string unit,
+        double? minArea,
+        int? durationMinutes,
+        int sortOrder,
+        bool isActive)
+    {
+        if (categoryId == Guid.Empty)
+            throw new ArgumentException("CategoryId is required", nameof(categoryId));
+
+        if (basePrice <= 0)
+            throw new ArgumentException("BasePrice must be greater than zero", nameof(basePrice));
+
+        if (string.IsNullOrWhiteSpace(unit))
+            throw new ArgumentException("Unit is required", nameof(unit));
+
+        CategoryId = categoryId;
+        Name = LocalizedString.Create(nameRu, nameEn);
+        Description = LocalizedString.Create(descriptionRu, descriptionEn);
+        BasePrice = basePrice;
+        Unit = unit.Trim();
+        MinArea = minArea;
+        DurationMinutes = durationMinutes;
+        SortOrder = sortOrder;
+        IsActive = isActive;
+    }
+
+    /// <summary>
     /// Изменение цены услуги
     /// </summary>
     public void ChangePrice(decimal newPrice)
