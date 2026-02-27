@@ -11,7 +11,12 @@ public class Service : BaseEntity
     /// <summary>
     /// Идентификатор категории услуги
     /// </summary>
-    public Guid CategoryId { get; private set; }
+    public int CategoryId { get; private set; }
+
+    /// <summary>
+    /// Навигационное свойство — категория услуги
+    /// </summary>
+    public Category? Category { get; private set; }
 
     /// <summary>
     /// Мультиязычное название услуги
@@ -65,7 +70,7 @@ public class Service : BaseEntity
     /// Фабричный метод создания услуги
     /// </summary>
     public static Service Create(
-        Guid categoryId,
+        int categoryId,
         string nameRu,
         string nameEn,
         string descriptionRu,
@@ -76,7 +81,7 @@ public class Service : BaseEntity
         int? durationMinutes,
         int sortOrder)
     {
-        if (categoryId == Guid.Empty)
+        if (categoryId <= 0)
             throw new ArgumentException("CategoryId is required", nameof(categoryId));
 
         if (basePrice <= 0)
@@ -103,7 +108,7 @@ public class Service : BaseEntity
     /// Обновление всех полей услуги
     /// </summary>
     public void Update(
-        Guid categoryId,
+        int categoryId,
         string nameRu,
         string nameEn,
         string descriptionRu,
@@ -115,7 +120,7 @@ public class Service : BaseEntity
         int sortOrder,
         bool isActive)
     {
-        if (categoryId == Guid.Empty)
+        if (categoryId <= 0)
             throw new ArgumentException("CategoryId is required", nameof(categoryId));
 
         if (basePrice <= 0)

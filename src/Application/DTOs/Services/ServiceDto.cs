@@ -6,7 +6,7 @@ namespace Application.DTOs.Services;
 public class ServiceDto
 {
     public int Id { get; init; }
-    public Guid CategoryId { get; init; }
+    public int CategoryId { get; init; }
     public string NameRu { get; init; } = string.Empty;
     public string NameEn { get; init; } = string.Empty;
     public string DescriptionRu { get; init; } = String.Empty;
