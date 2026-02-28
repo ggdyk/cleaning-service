@@ -28,7 +28,6 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.Property(x => x.SortOrder).IsRequired();
         builder.Property(x => x.IsActive).IsRequired();
 
-        // Name (LocalizedString) — HasData для owned type вызывается внутри OwnsOne
         builder.OwnsOne(x => x.Name, name =>
         {
             name.Property(n => n.Ru)
@@ -52,7 +51,6 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
             );
         });
 
-        // Description (LocalizedString)
         builder.OwnsOne(x => x.Description, desc =>
         {
             desc.Property(d => d.Ru)
@@ -73,12 +71,11 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
             );
         });
 
-        // Seed data — только скалярные свойства родительской сущности
         builder.HasData(
             new
             {
                 Id = 1,
-                CategoryId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                CategoryId = 1,
                 BasePrice = 1000m,
                 Unit = "service",
                 MinArea = (double?)null,
@@ -89,7 +86,7 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
             new
             {
                 Id = 2,
-                CategoryId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                CategoryId = 1,
                 BasePrice = 500m,
                 Unit = "sqm",
                 MinArea = (double?)30.0,

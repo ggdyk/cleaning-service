@@ -27,15 +27,11 @@ public class CreateOrderRequest
 public class OrderServiceItem
 {
     public int ServiceId { get; set; }
-    public string ServiceName { get; set; } = string.Empty;
-    public decimal UnitPrice { get; set; }
     public double Quantity { get; set; }
 }
 
 public class OrderExtraServiceItem
 {
     public int ExtraServiceId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
 }
