@@ -22,6 +22,117 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Domain.Entities.CalculatorSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CityId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MinimumOrderAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal>("PricePerBathroom")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal>("PricePerSquareMeter")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CityId")
+                        .IsUnique();
+
+                    b.ToTable("CalculatorSettings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CityId = 1,
+                            MinimumOrderAmount = 3000m,
+                            PricePerBathroom = 1000m,
+                            PricePerSquareMeter = 50m,
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("IconUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsActive = true,
+                            SortOrder = 1
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.ExtraService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExtraServices", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.FAQ", b =>
                 {
                     b.Property<int>("Id")
@@ -94,8 +205,16 @@ namespace Infrastructure.Migrations
                     b.Property<double>("Area")
                         .HasColumnType("double precision");
 
+                    b.Property<decimal>("AreaPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
                     b.Property<int>("Bathrooms")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("BathroomsPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<int>("CityId")
                         .HasColumnType("integer");
@@ -121,6 +240,10 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<decimal>("ExtraServicesPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
                     b.Property<string>("Floor")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -134,6 +257,10 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
+
+                    b.Property<decimal>("ServicePrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -321,8 +448,8 @@ namespace Infrastructure.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("DurationMinutes")
                         .HasColumnType("integer");
@@ -343,6 +470,8 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.ToTable("Services", (string)null);
 
                     b.HasData(
@@ -350,7 +479,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 1,
                             BasePrice = 1000m,
-                            CategoryId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            CategoryId = 1,
                             DurationMinutes = 120,
                             IsActive = true,
                             SortOrder = 1,
@@ -360,7 +489,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 2,
                             BasePrice = 500m,
-                            CategoryId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            CategoryId = 1,
                             DurationMinutes = 60,
                             IsActive = true,
                             MinArea = 30.0,
@@ -424,6 +553,92 @@ namespace Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Category", b =>
+                {
+                    b.OwnsOne("Domain.ValueObjects.LocalizedString", "Description", b1 =>
+                        {
+                            b1.Property<int>("CategoryId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("En")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("description_en");
+
+                            b1.Property<string>("Kk")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("description_kk");
+
+                            b1.Property<string>("Ru")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("description_ru");
+
+                            b1.HasKey("CategoryId");
+
+                            b1.ToTable("Categories");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CategoryId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    CategoryId = 1,
+                                    En = "Residential cleaning services",
+                                    Kk = "Тұрғын үй-жайларды тазалау",
+                                    Ru = "Уборка жилых помещений"
+                                });
+                        });
+
+                    b.OwnsOne("Domain.ValueObjects.LocalizedString", "Name", b1 =>
+                        {
+                            b1.Property<int>("CategoryId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("En")
+                                .IsRequired()
+                                .HasMaxLength(255)
+                                .HasColumnType("character varying(255)")
+                                .HasColumnName("name_en");
+
+                            b1.Property<string>("Kk")
+                                .IsRequired()
+                                .HasMaxLength(255)
+                                .HasColumnType("character varying(255)")
+                                .HasColumnName("name_kk");
+
+                            b1.Property<string>("Ru")
+                                .IsRequired()
+                                .HasMaxLength(255)
+                                .HasColumnType("character varying(255)")
+                                .HasColumnName("name_ru");
+
+                            b1.HasKey("CategoryId");
+
+                            b1.ToTable("Categories");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CategoryId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    CategoryId = 1,
+                                    En = "Apartment cleaning",
+                                    Kk = "Пәтерлерді тазалау",
+                                    Ru = "Уборка квартир"
+                                });
+                        });
+
+                    b.Navigation("Description")
+                        .IsRequired();
+
+                    b.Navigation("Name")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Entities.OrderExtraService", b =>
                 {
                     b.HasOne("Domain.Entities.Order", null)
@@ -453,6 +668,12 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Service", b =>
                 {
+                    b.HasOne("Domain.Entities.Category", "Category")
+                        .WithMany("Services")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("Domain.ValueObjects.LocalizedString", "Description", b1 =>
                         {
                             b1.Property<int>("ServiceId")
@@ -544,11 +765,18 @@ namespace Infrastructure.Migrations
                                 });
                         });
 
+                    b.Navigation("Category");
+
                     b.Navigation("Description")
                         .IsRequired();
 
                     b.Navigation("Name")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Category", b =>
+                {
+                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("Domain.Entities.Order", b =>
