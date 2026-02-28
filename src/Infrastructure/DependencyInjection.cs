@@ -1,3 +1,4 @@
+using Application.Features.Calculator.CalculatePrice;
 using Application.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
@@ -36,10 +37,16 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IFAQRepository, FAQRepository>();
+        services.AddScoped<ICalculatorSettingsRepository, CalculatorSettingsRepository>();
+        services.AddScoped<IExtraServiceRepository, ExtraServiceRepository>();
 
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
+
+        // Настройки калькулятора по умолчанию (fallback если нет записи в БД)
+        services.Configure<CalculatorDefaultSettings>(
+            configuration.GetSection(CalculatorDefaultSettings.SectionName));
 
         return services;
     }

@@ -15,6 +15,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Service> Services { get; set; }
+    public DbSet<ExtraService> ExtraServices { get; set; }
+    public DbSet<CalculatorSettings> CalculatorSettings { get; set; }
 
     // Content
     public DbSet<FAQ> FAQs { get; set; }

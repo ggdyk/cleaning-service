@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260228180827_AddCalculatorSettings")]
+    partial class AddCalculatorSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,16 +208,8 @@ namespace Infrastructure.Migrations
                     b.Property<double>("Area")
                         .HasColumnType("double precision");
 
-                    b.Property<decimal>("AreaPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
                     b.Property<int>("Bathrooms")
                         .HasColumnType("integer");
-
-                    b.Property<decimal>("BathroomsPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
 
                     b.Property<int>("CityId")
                         .HasColumnType("integer");
@@ -240,10 +235,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<decimal>("ExtraServicesPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
                     b.Property<string>("Floor")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -257,10 +248,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
-
-                    b.Property<decimal>("ServicePrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()

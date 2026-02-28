@@ -44,7 +44,19 @@ public class Order : BaseEntity
     public string? Comment { get; private set; }
 
     // --- Цена и статус ---
-    /// <summary>Итоговая цена заказа (фиксируется при создании).</summary>
+    /// <summary>Стоимость за площадь: площадь × коэффициент за кв.м.</summary>
+    public decimal AreaPrice { get; private set; }
+
+    /// <summary>Стоимость за санузлы: кол-во × коэффициент за санузел.</summary>
+    public decimal BathroomsPrice { get; private set; }
+
+    /// <summary>Суммарная стоимость основных услуг (снимок на момент создания).</summary>
+    public decimal ServicePrice { get; private set; }
+
+    /// <summary>Суммарная стоимость дополнительных услуг (снимок на момент создания).</summary>
+    public decimal ExtraServicesPrice { get; private set; }
+
+    /// <summary>Итоговая цена заказа (фиксируется при создании, не меньше минимума).</summary>
     public decimal TotalPrice { get; private set; }
 
     /// <summary>Текущий статус заказа.</summary>
@@ -74,6 +86,11 @@ public class Order : BaseEntity
     /// Фабричный метод создания нового заказа.
     /// Бизнес-правило: новый заказ всегда получает статус New.
     /// </summary>
+    /// <param name="areaPrice">Стоимость за площадь.</param>
+    /// <param name="bathroomsPrice">Стоимость за санузлы.</param>
+    /// <param name="servicePrice">Стоимость основных услуг.</param>
+    /// <param name="extraServicesPrice">Стоимость дополнительных услуг.</param>
+    /// <param name="totalPrice">Итоговая цена (с учётом минимума).</param>
     public static Order Create(
         int clientId,
         int cityId,
@@ -82,6 +99,10 @@ public class Order : BaseEntity
         string house,
         double area,
         int bathrooms,
+        decimal areaPrice,
+        decimal bathroomsPrice,
+        decimal servicePrice,
+        decimal extraServicesPrice,
         decimal totalPrice,
         string? apartment = null,
         string? entrance = null,
@@ -124,6 +145,10 @@ public class Order : BaseEntity
             Area = area,
             Bathrooms = bathrooms,
             Comment = comment?.Trim(),
+            AreaPrice = areaPrice,
+            BathroomsPrice = bathroomsPrice,
+            ServicePrice = servicePrice,
+            ExtraServicesPrice = extraServicesPrice,
             TotalPrice = totalPrice,
             Status = OrderStatus.New,
             CreatedAt = now,

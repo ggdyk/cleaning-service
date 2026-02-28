@@ -43,13 +43,6 @@ public class CreateOrderValidator : AbstractValidator<CreateOrderRequest>
             service.RuleFor(s => s.ServiceId)
                 .GreaterThan(0).WithMessage("Некорректный ID услуги");
 
-            service.RuleFor(s => s.ServiceName)
-                .NotEmpty().WithMessage("Название услуги обязательно")
-                .MaximumLength(255).WithMessage("Название услуги не может превышать 255 символов");
-
-            service.RuleFor(s => s.UnitPrice)
-                .GreaterThanOrEqualTo(0).WithMessage("Цена не может быть отрицательной");
-
             service.RuleFor(s => s.Quantity)
                 .GreaterThan(0).WithMessage("Количество должно быть больше нуля");
         });
@@ -58,13 +51,6 @@ public class CreateOrderValidator : AbstractValidator<CreateOrderRequest>
         {
             extra.RuleFor(e => e.ExtraServiceId)
                 .GreaterThan(0).WithMessage("Некорректный ID доп. услуги");
-
-            extra.RuleFor(e => e.Name)
-                .NotEmpty().WithMessage("Название доп. услуги обязательно")
-                .MaximumLength(255).WithMessage("Название доп. услуги не может превышать 255 символов");
-
-            extra.RuleFor(e => e.UnitPrice)
-                .GreaterThanOrEqualTo(0).WithMessage("Цена не может быть отрицательной");
 
             extra.RuleFor(e => e.Quantity)
                 .GreaterThan(0).WithMessage("Количество должно быть больше нуля");
