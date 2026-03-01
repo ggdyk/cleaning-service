@@ -84,13 +84,19 @@
 
 ### Задача: Реализовать хранение отзывов клиентов (phase-4, backend, database, priority-medium)
 
-- `ReviewModerationStatus` enum — Pending=1, Approved=2, Rejected=3 (в `Domain/Enums/`)
-- `Review` entity — полностью переписан: `private set`, `Create(...)`, `Approve(moderatorId)`, `Reject(moderatorId)`, XML-комментарии, бизнес-правила в Domain
-- `ReviewConfiguration` — EF-конфигурация: ограничения длин (AuthorName 200, ReviewText 4000), enum→int, 3 индекса (ModerationStatus, UserId, OrderId partial WHERE IS NOT NULL)
+**Выполнено:**
+- `ReviewModerationStatus` enum — Pending=1, Approved=2, Rejected=3 (`Domain/Enums/`)
+- `Review` entity — полностью переписан по стандарту: `private set`, `Create(userId, authorName, rating, reviewText, orderId?)`, `Approve(moderatorId)`, `Reject(moderatorId)`, XML-комментарии, бизнес-правила только в Domain
+- `ReviewConfiguration` — EF: `AuthorName` varchar(200), `ReviewText` varchar(4000), enum→int, 3 индекса: `IX_Reviews_ModerationStatus`, `IX_Reviews_UserId`, `IX_Reviews_OrderId` (partial WHERE IS NOT NULL)
 - `DbSet<Review> Reviews` — добавлен в `ApplicationDbContext`
 - Миграция `AddReviews` (20260301134142) — применена, таблица `Reviews` в БД
-- Попутно исправлена миграция `AddCategories` — теперь корректно работает даже если таблица `Services` отсутствует (IF EXISTS guards в Up и Down)
 - Сборка: **0 ошибок**
+
+**Проблемы при реализации:**
+
+1. **`dotnet ef database update` говорил "already up to date" при пустой истории** — оказалось, предыдущий запуск уже применил все миграции. Когда запустили откат до старой миграции (`database update <old>`) — EF интерпретировал это как "откатить всё выше" и дропнул `Reviews`. Потом применили через `migrations script` → psql напрямую.
+
+2. **Миграция `AddCategories` падала на `DELETE FROM "Services"`** — таблица `Services` была потеряна при пересоздании БД ранее. Исправлено: все операции с `Services` в Up/Down обёрнуты в `DO $$ BEGIN IF EXISTS (...) THEN ... END IF; END $$;`.
 
 ## Сделано сегодня (2026-02-27)
 
@@ -126,10 +132,8 @@
 2. **Неверная сигнатура `NotFoundException`** — в хендлерах использовался `new NotFoundException("сообщение")`, но конструктор принимает `(string entityName, object entityId)`. Исправлено на `new NotFoundException("FAQ", command.Id)`.
 
 ## Известные проблемы
-- Таблица `Services` отсутствует в БД — была потеряна при пересоздании базы.
-  Колонки `name_kk`/`description_kk` из миграции `AddFAQs` будут применены при восстановлении.
-- В Domain-сущностях `Page`, `CallBackRequest`, `Review`, `Payment` — CS8618 предупреждения
-  (nullable свойства без инициализации). Существовали до текущей работы, не критично.
+- **`dotnet ef database update` ненадёжен** — при нестандартном состоянии БД инструмент ведёт себя непредсказуемо. Надёжная альтернатива: `dotnet ef migrations script -o out.sql` → применить через psql напрямую.
+- В Domain-сущностях `Page`, `CallBackRequest`, `Payment` — CS8618 предупреждения (nullable свойства без инициализации). Существовали до текущей работы, не критично.
 
 ## Текущий фокус
 > **Следующий шаг**: `IReviewRepository` → `ReviewRepository` → CQRS Features → `ReviewsController`
