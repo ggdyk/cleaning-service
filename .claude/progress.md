@@ -57,8 +57,14 @@
 - [x] CQRS: `UpdateFAQ` — Command + Handler + Validator
 - [x] CQRS: `DeleteFAQ` — Command + Handler
 - [x] `FAQController` — GET /api/faq (публичный), CRUD /api/faq/admin/* (Admin/Manager)
-- [ ] `Page`, `Review`, `CallBackRequest` — конфигурации и миграции
-- [ ] CQRS + Controllers для Page, Review, CallBackRequest
+- [x] `ReviewModerationStatus` enum — Pending/Approved/Rejected
+- [x] `Review` entity — переписан по стандарту (private set, Create, Approve, Reject, XML-комментарии)
+- [x] `ReviewConfiguration` — EF-конфигурация, индексы (ModerationStatus, UserId, OrderId partial)
+- [x] Миграция `AddReviews` (20260301134142) — таблица Reviews создана в БД
+- [ ] `IReviewRepository` + `ReviewRepository` — CRUD
+- [ ] CQRS + Controller для Review
+- [ ] `Page`, `CallBackRequest` — конфигурации и миграции
+- [ ] CQRS + Controllers для Page, CallBackRequest
 
 ### Admin (Generic Context) ❌ — не начат
 - [ ] Статистика, управление пользователями
@@ -71,6 +77,20 @@
 | 2026-02-23 | AddServices         | Seed-данные для Catalog             |
 | 2026-02-24 | AddOrders           | Схема Orders                        |
 | 2026-02-24 | AddFAQs             | Таблица FAQs + поля _kk для Services|
+| 2026-02-27 | AddCategories       | Таблица Categories + FK к Services  |
+| 2026-03-01 | AddReviews          | Таблица Reviews с модерацией        |
+
+## Сделано сегодня (2026-03-01)
+
+### Задача: Реализовать хранение отзывов клиентов (phase-4, backend, database, priority-medium)
+
+- `ReviewModerationStatus` enum — Pending=1, Approved=2, Rejected=3 (в `Domain/Enums/`)
+- `Review` entity — полностью переписан: `private set`, `Create(...)`, `Approve(moderatorId)`, `Reject(moderatorId)`, XML-комментарии, бизнес-правила в Domain
+- `ReviewConfiguration` — EF-конфигурация: ограничения длин (AuthorName 200, ReviewText 4000), enum→int, 3 индекса (ModerationStatus, UserId, OrderId partial WHERE IS NOT NULL)
+- `DbSet<Review> Reviews` — добавлен в `ApplicationDbContext`
+- Миграция `AddReviews` (20260301134142) — применена, таблица `Reviews` в БД
+- Попутно исправлена миграция `AddCategories` — теперь корректно работает даже если таблица `Services` отсутствует (IF EXISTS guards в Up и Down)
+- Сборка: **0 ошибок**
 
 ## Сделано сегодня (2026-02-27)
 
@@ -112,5 +132,5 @@
   (nullable свойства без инициализации). Существовали до текущей работы, не критично.
 
 ## Текущий фокус
-> **Следующий шаг**: CQRS для Orders — `AssignCleaner` → `ChangeStatus` → `CancelOrder`
-> либо продолжить Content — `Page`, `Review`, `CallBackRequest` (конфигурации + миграции + CQRS)
+> **Следующий шаг**: `IReviewRepository` → `ReviewRepository` → CQRS Features → `ReviewsController`
+> либо Orders: `AssignCleaner` → `ChangeStatus` → `CancelOrder`
