@@ -12,12 +12,24 @@ namespace Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // 1. Удаляем seed-данные Services (CategoryId был Guid — несовместимый тип)
-            migrationBuilder.DeleteData(table: "Services", keyColumn: "Id", keyValue: 1);
-            migrationBuilder.DeleteData(table: "Services", keyColumn: "Id", keyValue: 2);
+            // 1. Удаляем seed-данные Services (только если таблица существует)
+            migrationBuilder.Sql(@"
+                DO $$ BEGIN
+                    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Services') THEN
+                        DELETE FROM ""Services"" WHERE ""Id"" IN (1, 2);
+                    END IF;
+                END $$;");
 
-            // 2. Дропаем старый uuid-столбец
-            migrationBuilder.DropColumn(name: "CategoryId", table: "Services");
+            // 2. Дропаем старый uuid-столбец (только если таблица и столбец существуют)
+            migrationBuilder.Sql(@"
+                DO $$ BEGIN
+                    IF EXISTS (
+                        SELECT FROM information_schema.columns
+                        WHERE table_name = 'Services' AND column_name = 'CategoryId'
+                    ) THEN
+                        ALTER TABLE ""Services"" DROP COLUMN ""CategoryId"";
+                    END IF;
+                END $$;");
 
             // 3. Создаём таблицу Categories
             migrationBuilder.CreateTable(
@@ -47,80 +59,67 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "IconUrl", "IsActive", "SortOrder", "description_en", "description_kk", "description_ru", "name_en", "name_kk", "name_ru" },
                 values: new object[] { 1, null, true, 1, "Residential cleaning services", "Тұрғын үй-жайларды тазалау", "Уборка жилых помещений", "Apartment cleaning", "Пәтерлерді тазалау", "Уборка квартир" });
 
-            // 5. Добавляем новый int-столбец (nullable — чтобы избежать проблем с существующими строками)
-            migrationBuilder.AddColumn<int>(
-                name: "CategoryId",
-                table: "Services",
-                type: "integer",
-                nullable: true);
+            // 5–7. Добавляем CategoryId в Services, сидируем, делаем NOT NULL
+            // (только если таблица Services существует)
+            migrationBuilder.Sql(@"
+                DO $$ BEGIN
+                    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Services') THEN
+                        ALTER TABLE ""Services"" ADD COLUMN IF NOT EXISTS ""CategoryId"" integer NULL;
+                        INSERT INTO ""Services"" (""Id"", ""CategoryId"", ""BasePrice"", ""DurationMinutes"", ""IsActive"", ""MinArea"", ""SortOrder"", ""Unit"", description_en, description_kk, description_ru, name_en, name_kk, name_ru)
+                        VALUES
+                            (1, 1, 1000, 120, true, null, 1, 'service', 'Full cleaning of the premises', 'Үй-жайды толық жинау', 'Полная уборка помещения', 'General cleaning', 'Жалпы жинау', 'Генеральная уборка'),
+                            (2, 1, 500,   60, true, 30.0, 2, 'sqm',     'Regular cleaning service',      'Тұрақты жинау қызметі', 'Регулярная уборка',       'Maintenance cleaning', 'Қолдаушы жинау', 'Поддерживающая уборка')
+                        ON CONFLICT DO NOTHING;
+                        ALTER TABLE ""Services"" ALTER COLUMN ""CategoryId"" SET NOT NULL;
+                    END IF;
+                END $$;");
 
-            // 6. Повторно сидируем Services с корректным int CategoryId
-            migrationBuilder.InsertData(
-                table: "Services",
-                columns: new[] { "Id", "CategoryId", "BasePrice", "DurationMinutes", "IsActive", "MinArea", "SortOrder", "Unit", "description_en", "description_kk", "description_ru", "name_en", "name_kk", "name_ru" },
-                values: new object[,]
-                {
-                    { 1, 1, 1000m, 120, true, null, 1, "service", "Full cleaning of the premises", "Үй-жайды толық жинау", "Полная уборка помещения", "General cleaning", "Жалпы жинау", "Генеральная уборка" },
-                    { 2, 1, 500m,   60, true, 30.0, 2, "sqm",     "Regular cleaning service",      "Тұрақты жинау қызметі", "Регулярная уборка",       "Maintenance cleaning", "Қолдаушы жинау", "Поддерживающая уборка" }
-                });
-
-            // 7. Делаем столбец NOT NULL
-            migrationBuilder.AlterColumn<int>(
-                name: "CategoryId",
-                table: "Services",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer",
-                oldNullable: true);
-
-            // 8. Индекс и FK
-            migrationBuilder.CreateIndex(
-                name: "IX_Services_CategoryId",
-                table: "Services",
-                column: "CategoryId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Services_Categories_CategoryId",
-                table: "Services",
-                column: "CategoryId",
-                principalTable: "Categories",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+            // 8. Индекс и FK (только если таблица Services существует)
+            migrationBuilder.Sql(@"
+                DO $$ BEGIN
+                    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Services') THEN
+                        IF NOT EXISTS (
+                            SELECT FROM pg_indexes WHERE tablename = 'Services' AND indexname = 'IX_Services_CategoryId'
+                        ) THEN
+                            CREATE INDEX ""IX_Services_CategoryId"" ON ""Services"" (""CategoryId"");
+                        END IF;
+                        IF NOT EXISTS (
+                            SELECT FROM information_schema.table_constraints
+                            WHERE constraint_name = 'FK_Services_Categories_CategoryId'
+                        ) THEN
+                            ALTER TABLE ""Services"" ADD CONSTRAINT ""FK_Services_Categories_CategoryId""
+                            FOREIGN KEY (""CategoryId"") REFERENCES ""Categories"" (""Id"") ON DELETE RESTRICT;
+                        END IF;
+                    END IF;
+                END $$;");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(name: "FK_Services_Categories_CategoryId", table: "Services");
+            migrationBuilder.Sql(@"
+                DO $$ BEGIN
+                    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Services') THEN
+                        IF EXISTS (
+                            SELECT FROM information_schema.table_constraints
+                            WHERE constraint_name = 'FK_Services_Categories_CategoryId'
+                        ) THEN
+                            ALTER TABLE ""Services"" DROP CONSTRAINT ""FK_Services_Categories_CategoryId"";
+                        END IF;
+                        DROP INDEX IF EXISTS ""IX_Services_CategoryId"";
+                        DELETE FROM ""Services"" WHERE ""Id"" IN (1, 2);
+                        IF EXISTS (
+                            SELECT FROM information_schema.columns
+                            WHERE table_name = 'Services' AND column_name = 'CategoryId'
+                        ) THEN
+                            ALTER TABLE ""Services"" DROP COLUMN ""CategoryId"";
+                        END IF;
+                        ALTER TABLE ""Services"" ADD COLUMN ""CategoryId"" uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+                        UPDATE ""Services"" SET ""CategoryId"" = '11111111-1111-1111-1111-111111111111' WHERE ""Id"" IN (1, 2);
+                    END IF;
+                END $$;");
+
             migrationBuilder.DropTable(name: "Categories");
-            migrationBuilder.DropIndex(name: "IX_Services_CategoryId", table: "Services");
-
-            migrationBuilder.DeleteData(table: "Services", keyColumn: "Id", keyValue: 1);
-            migrationBuilder.DeleteData(table: "Services", keyColumn: "Id", keyValue: 2);
-
-            migrationBuilder.DropColumn(name: "CategoryId", table: "Services");
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "CategoryId",
-                table: "Services",
-                type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
-
-            migrationBuilder.UpdateData(
-                table: "Services",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "CategoryId",
-                value: new Guid("11111111-1111-1111-1111-111111111111"));
-
-            migrationBuilder.UpdateData(
-                table: "Services",
-                keyColumn: "Id",
-                keyValue: 2,
-                column: "CategoryId",
-                value: new Guid("11111111-1111-1111-1111-111111111111"));
         }
     }
 }
