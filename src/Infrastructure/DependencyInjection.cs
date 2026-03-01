@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IFAQRepository, FAQRepository>();
+        services.AddScoped<ICallbackRequestRepository, CallbackRequestRepository>();
         services.AddScoped<ICalculatorSettingsRepository, CalculatorSettingsRepository>();
         services.AddScoped<IExtraServiceRepository, ExtraServiceRepository>();
 

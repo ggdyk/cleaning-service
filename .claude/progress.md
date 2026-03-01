@@ -57,8 +57,12 @@
 - [x] CQRS: `UpdateFAQ` — Command + Handler + Validator
 - [x] CQRS: `DeleteFAQ` — Command + Handler
 - [x] `FAQController` — GET /api/faq (публичный), CRUD /api/faq/admin/* (Admin/Manager)
-- [ ] `Page`, `Review`, `CallBackRequest` — конфигурации и миграции
-- [ ] CQRS + Controllers для Page, Review, CallBackRequest
+- [x] `CallBackRequest` — entity переписан по стандарту, EF-конфигурация, миграция применена
+- [x] `ICallbackRequestRepository` + `CallbackRequestRepository`
+- [x] CQRS: `SubmitCallbackRequest` — Command + Handler + Validator
+- [x] `CallbackRequestsController` — POST /api/callbacks (публичный)
+- [ ] `Page`, `Review` — конфигурации и миграции
+- [ ] CQRS + Controllers для Page, Review
 
 ### Admin (Generic Context) ❌ — не начат
 - [ ] Статистика, управление пользователями
@@ -74,6 +78,7 @@
 | 2026-02-27 | AddCategories       | Таблица Categories + FK для Services|
 | 2026-02-28 | AddCalculatorSettings | CalculatorSettings + ExtraServices |
 | 2026-02-28 | AddOrderPriceBreakdown | 4 колонки разбивки цены в Orders  |
+| 2026-03-01 | AddCallbackRequests    | Таблица CallbackRequests           |
 
 ## Сделано сегодня (2026-02-27)
 
@@ -168,6 +173,54 @@ totalPrice     = max(subtotal, MinimumOrderAmount)
 #### Безопасность
 > Клиент больше **не может** подменить цену в запросе — все цены загружаются из БД на стороне сервера.
 
+## Сделано сегодня (2026-03-01)
+
+### Задача 3.11: Создать модель CallbackRequest (phase-3, priority-medium) ✅
+
+- `CallbackRequestStatus` enum (New, Processed, Rejected)
+- `CallBackRequest` entity — переписана по стандарту (private set, Create, XML-doc)
+- `CallBackRequestConfiguration` — таблица CallbackRequests, индекс по (Status, CreatedAt)
+- Миграция `AddCallbackRequests` (20260301122839) — применена
+- `ICallbackRequestRepository` + `CallbackRequestRepository` (AddAsync)
+- DTOs: `SubmitCallbackRequest`, `CallbackRequestResponse`
+- CQRS: `SubmitCallbackRequestCommand` + Handler + Validator (валидация телефона regex)
+- `CallbackRequestsController` — POST /api/callbacks (публичный)
+- Регистрация `ICallbackRequestRepository → CallbackRequestRepository` в Infrastructure DI
+- Сборка: **0 ошибок**
+
+**Конфликты имён (решены через alias):**
+- Папка `Features/Callbacks/SubmitCallbackRequest` + DTO-класс `SubmitCallbackRequest` → alias в Command и Controller
+
+#### Endpoint
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| POST | /api/callbacks | Публичный |
+
+## Сделано сегодня (2026-03-01) — продолжение
+
+### Задача 3.12: Создать модель дополнительных услуг (phase-3, priority-medium) ✅
+
+**Что уже было (не трогали):** таблица `ExtraServices` в БД, `ExtraServiceConfiguration`, `IExtraServiceRepository` (частичный), DI-регистрация, интеграция с калькулятором и `CreateOrder`.
+
+**Что добавлено:**
+- `ExtraService` entity — переписана по стандарту (private set, `Create`, `Update`, `BusinessRuleException`)
+- `IExtraServiceRepository` — расширен: `GetAllAsync`, `GetByIdAsync`, `AddAsync`, `UpdateAsync`, `DeleteAsync`
+- `ExtraServiceRepository` — реализованы все новые методы
+- DTOs: `ExtraServiceDto`, `CreateExtraServiceRequest`, `UpdateExtraServiceRequest`
+- CQRS (5 features): `GetExtraServices`, `GetExtraServiceById`, `CreateExtraService` + Validator, `UpdateExtraService` + Validator, `DeleteExtraService`
+- `ExtraServicesController` — 5 endpoints (см. таблицу)
+- Маппинг вынесен в `GetExtraServicesHandler.ToDto()` — используется всеми хендлерами (DRY)
+- Сборка: **0 ошибок**, миграция не нужна (таблица уже существует)
+
+#### Endpoints ExtraServices
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| GET | /api/extra-services | Публичный (только активные) |
+| GET | /api/extra-services/{id} | Публичный |
+| POST | /api/extra-services | Admin |
+| PUT | /api/extra-services/{id} | Admin |
+| DELETE | /api/extra-services/{id} | Admin |
+
 ## Текущий фокус
 > **Следующий шаг**: CQRS для Orders — `AssignCleaner` → `ChangeStatus` → `CancelOrder`
-> либо продолжить Content — `Page`, `Review`, `CallBackRequest` (конфигурации + миграции + CQRS)
+> либо продолжить Content — `Page`, `Review` (конфигурации + миграции + CQRS)
