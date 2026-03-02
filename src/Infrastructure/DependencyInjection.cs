@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<ICallbackRequestRepository, CallbackRequestRepository>();
         services.AddScoped<ICalculatorSettingsRepository, CalculatorSettingsRepository>();
         services.AddScoped<IExtraServiceRepository, ExtraServiceRepository>();
+        services.AddScoped<IPageRepository, PageRepository>();
 
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();

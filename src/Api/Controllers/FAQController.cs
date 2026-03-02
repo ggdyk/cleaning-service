@@ -26,13 +26,14 @@ public class FAQController : ControllerBase
     // =========================================================================
 
     /// <summary>
-    /// Получить список активных FAQ. Публичный доступ, сортировка по SortOrder.
+    /// Получить список активных FAQ на языке запроса.
+    /// Язык: ?lang=ru|kk|en или заголовок Accept-Language. По умолчанию ru.
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IReadOnlyList<FaqResponse>>> GetActive()
+    public async Task<ActionResult<IReadOnlyList<FaqLocalizedResponse>>> GetActive(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetFAQsQuery());
+        var result = await _mediator.Send(new GetFAQsQuery(), ct);
         return Ok(result);
     }
 
