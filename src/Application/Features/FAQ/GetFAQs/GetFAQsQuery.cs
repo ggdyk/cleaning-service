@@ -3,5 +3,5 @@ using MediatR;
 
 namespace Application.Features.FAQ.GetFAQs;
 
-/// <summary>Получить список активных FAQ (публичный endpoint).</summary>
-public record GetFAQsQuery : IRequest<IReadOnlyList<FaqResponse>>;
+/// <summary>Получить список активных FAQ на языке текущего запроса.</summary>
+public record GetFAQsQuery : IRequest<IReadOnlyList<FaqLocalizedResponse>>;

@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
 
     // Content
     public DbSet<FAQ> FAQs { get; set; }
+    public DbSet<Page> Pages { get; set; }
     public DbSet<CallBackRequest> CallbackRequests { get; set; }
 
     // Orders
