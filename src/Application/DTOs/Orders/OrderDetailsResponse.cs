@@ -25,6 +25,12 @@ public class OrderDetailsResponse
     public int Bathrooms { get; set; }
     public string? Comment { get; set; }
 
+    // Разбивка цены
+    public decimal AreaPrice { get; set; }
+    public decimal BathroomsPrice { get; set; }
+    public decimal ServicePrice { get; set; }
+    public decimal ExtraServicesPrice { get; set; }
+
     // Идентификаторы
     public int CityId { get; set; }
     public int TimeSlotId { get; set; }
