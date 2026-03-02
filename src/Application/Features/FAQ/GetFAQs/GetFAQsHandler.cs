@@ -1,37 +1,34 @@
+using Application.Common;
 using Application.DTOs.FAQ;
 using Application.Interfaces;
 using MediatR;
 
 namespace Application.Features.FAQ.GetFAQs;
 
-public class GetFAQsHandler : IRequestHandler<GetFAQsQuery, IReadOnlyList<FaqResponse>>
+public class GetFAQsHandler : IRequestHandler<GetFAQsQuery, IReadOnlyList<FaqLocalizedResponse>>
 {
     private readonly IFAQRepository _faqRepository;
+    private readonly ILanguageContext _languageContext;
 
-    public GetFAQsHandler(IFAQRepository faqRepository)
+    public GetFAQsHandler(IFAQRepository faqRepository, ILanguageContext languageContext)
     {
         _faqRepository = faqRepository;
+        _languageContext = languageContext;
     }
 
-    public async Task<IReadOnlyList<FaqResponse>> Handle(
+    public async Task<IReadOnlyList<FaqLocalizedResponse>> Handle(
         GetFAQsQuery request,
         CancellationToken cancellationToken)
     {
         var faqs = await _faqRepository.GetActiveAsync();
+        var lang = _languageContext.Language;
 
-        return faqs.Select(f => new FaqResponse
+        return faqs.Select(f => new FaqLocalizedResponse
         {
             Id = f.Id,
-            QuestionRu = f.QuestionRu,
-            QuestionKk = f.QuestionKk,
-            QuestionEn = f.QuestionEn,
-            AnswerRu = f.AnswerRu,
-            AnswerKk = f.AnswerKk,
-            AnswerEn = f.AnswerEn,
-            SortOrder = f.SortOrder,
-            IsActive = f.IsActive,
-            CreatedAt = f.CreatedAt,
-            UpdatedAt = f.UpdatedAt
+            Question = LocalizationHelper.Pick(f.QuestionRu, f.QuestionKk, f.QuestionEn, lang),
+            Answer = LocalizationHelper.Pick(f.AnswerRu, f.AnswerKk, f.AnswerEn, lang),
+            SortOrder = f.SortOrder
         }).ToList();
     }
 }

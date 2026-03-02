@@ -165,6 +165,7 @@ app.UseAuthentication();
 // Подключаем авторизацию
 app.UseAuthorization();
 
+app.UseMiddleware<LanguageMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Маппинг контроллеров

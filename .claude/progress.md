@@ -69,11 +69,12 @@
 - [x] CQRS: `GetPendingReviews` — очередь модерации для Admin/Manager
 - [x] CQRS: `ApproveReview` — Command + Handler (вызывает review.Approve())
 - [x] CQRS: `RejectReview` — Command + Handler (вызывает review.Reject())
-- [x] `ReviewsController` — 6 endpoints (см. таблицу ниже)
-- [x] Регистрация `IReviewRepository → ReviewRepository` в Infrastructure/DependencyInjection.cs
-- [x] Сборка: **0 ошибок**
-- [ ] `Page`, `CallBackRequest` — конфигурации и миграции
-- [ ] CQRS + Controllers для Page, CallBackRequest
+- [x] `ReviewsController` — 6 endpoints
+- [x] `CallBackRequest` — entity переписан по стандарту, EF-конфигурация, миграция применена
+- [x] `ICallbackRequestRepository` + `CallbackRequestRepository`
+- [x] CQRS: `SubmitCallbackRequest` — Command + Handler + Validator
+- [x] `CallbackRequestsController` — POST /api/callbacks (публичный)
+- [ ] `Page` — конфигурация, миграция, CQRS, Controller
 
 ### Admin (Generic Context) ❌ — не начат
 - [ ] Статистика, управление пользователями
@@ -87,7 +88,12 @@
 | 2026-02-24 | AddOrders           | Схема Orders                        |
 | 2026-02-24 | AddFAQs             | Таблица FAQs + поля _kk для Services|
 | 2026-02-27 | AddCategories       | Таблица Categories + FK к Services  |
+| 2026-02-28 | AddCalculatorSettings | CalculatorSettings + ExtraServices |
+| 2026-02-28 | AddOrderPriceBreakdown | 4 колонки разбивки цены в Orders  |
+| 2026-03-01 | AddCallbackRequests    | Таблица CallbackRequests           |
 | 2026-03-01 | AddReviews          | Таблица Reviews с модерацией        |
+| 2026-03-02 | AddPageEntity       | Таблица Pages                       |
+| 2026-03-03 | AddUserRoleIndex    | Индекс IX_Users_Role                |
 
 ## Сделано сегодня (2026-03-03)
 
@@ -228,6 +234,108 @@
 - **`dotnet ef database update` ненадёжен** — при нестандартном состоянии БД инструмент ведёт себя непредсказуемо. Надёжная альтернатива: `dotnet ef migrations script -o out.sql` → применить через psql напрямую.
 - В Domain-сущностях `Page`, `CallBackRequest`, `Payment` — CS8618 предупреждения (nullable свойства без инициализации). Существовали до текущей работы, не критично.
 
+## Сделано сегодня (2026-02-28)
+
+### Задача 3.9: Калькулятор цен (phase-3, priority-high) ✅
+Полная вертикаль калькулятора:
+
+- `CalculatorSettings` — доработан по стандарту (private set, Create/Update, BusinessRuleException)
+- `ICalculatorSettingsRepository` + `CalculatorSettingsRepository` (GetByCityIdAsync, GetDefaultAsync)
+- `IExtraServiceRepository` + `ExtraServiceRepository` (GetByIdsAsync, GetAllActiveAsync)
+- `ExtraServiceConfiguration` — EF-конфигурация, таблица ExtraServices
+- `CalculatorSettingsConfiguration` — EF-конфигурация, seed для города 1 (50₸/кв.м, 1000₸/санузел, мин 3000₸)
+- Миграция `AddCalculatorSettings` (20260228) — применена
+- DTOs: `CalculatePriceRequest`, `CalculatePriceResponse` (с детализацией: areaPrice, bathroomsPrice, servicePrice, extraServicesPrice, subtotal, total)
+- CQRS: `CalculatePriceQuery` + `CalculatePriceHandler` + `CalculatePriceValidator`
+- `CalculatorController` — `POST /api/calculator` (публичный)
+- `CalculatorDefaultSettings` — Options pattern, fallback из appsettings.json
+- `appsettings.json` — секция `Calculator` с дефолтными коэффициентами
+- Сборка: **0 ошибок**
+
+#### Формула расчёта
+```
+areaPrice      = area × PricePerSquareMeter
+bathroomsPrice = bathrooms × PricePerBathroom
+servicePrice   = service.BasePrice (если ServiceId указан)
+extraServices  = sum(extraService.Price)
+subtotal       = areaPrice + bathroomsPrice + servicePrice + extraServices
+totalPrice     = max(subtotal, MinimumOrderAmount)
+```
+
+#### Приоритет настроек
+1. Запись в БД `CalculatorSettings` для CityId → 2. Первая запись в БД (дефолт) → 3. appsettings.json
+
+#### Endpoint
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| POST | /api/calculator | Публичный |
+
+### Известные проблемы после реализации
+- `Microsoft.Extensions.Options` и `Microsoft.Extensions.Configuration.Abstractions` добавлены в Application.csproj (необходимо для IOptions<T> в хендлере)
+
+### Задача 3.10: Интегрировать калькулятор с заказом (phase-3, priority-medium) ✅
+
+- `CreateOrderRequest` упрощён: убраны `ServiceName`, `UnitPrice`, `Name` — теперь клиент передаёт только IDs и количество
+- `Order` entity: добавлены `AreaPrice`, `BathroomsPrice`, `ServicePrice`, `ExtraServicesPrice`
+- `Order.Create()`: расширена сигнатура для приёма разбивки цены
+- `CreateOrderHandler`: полный серверный расчёт (загружает Service/ExtraService из БД, коэффициенты из CalculatorSettings)
+- `CreateOrderValidator`: удалены правила для убранных полей
+- `OrderDetailsResponse` + `GetOrderByIdHandler`: разбивка цены в ответе
+- `OrderConfiguration`: 4 новых decimal-колонки
+- Миграция `AddOrderPriceBreakdown` — применена
+- Сборка: **0 ошибок**
+
+#### Безопасность
+> Клиент больше **не может** подменить цену в запросе — все цены загружаются из БД на стороне сервера.
+
+## Сделано сегодня (2026-03-01)
+
+### Задача 3.11: Создать модель CallbackRequest (phase-3, priority-medium) ✅
+
+- `CallbackRequestStatus` enum (New, Processed, Rejected)
+- `CallBackRequest` entity — переписана по стандарту (private set, Create, XML-doc)
+- `CallBackRequestConfiguration` — таблица CallbackRequests, индекс по (Status, CreatedAt)
+- Миграция `AddCallbackRequests` (20260301122839) — применена
+- `ICallbackRequestRepository` + `CallbackRequestRepository` (AddAsync)
+- DTOs: `SubmitCallbackRequest`, `CallbackRequestResponse`
+- CQRS: `SubmitCallbackRequestCommand` + Handler + Validator (валидация телефона regex)
+- `CallbackRequestsController` — POST /api/callbacks (публичный)
+- Регистрация `ICallbackRequestRepository → CallbackRequestRepository` в Infrastructure DI
+- Сборка: **0 ошибок**
+
+**Конфликты имён (решены через alias):**
+- Папка `Features/Callbacks/SubmitCallbackRequest` + DTO-класс `SubmitCallbackRequest` → alias в Command и Controller
+
+#### Endpoint
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| POST | /api/callbacks | Публичный |
+
+## Сделано сегодня (2026-03-01) — продолжение
+
+### Задача 3.12: Создать модель дополнительных услуг (phase-3, priority-medium) ✅
+
+**Что уже было (не трогали):** таблица `ExtraServices` в БД, `ExtraServiceConfiguration`, `IExtraServiceRepository` (частичный), DI-регистрация, интеграция с калькулятором и `CreateOrder`.
+
+**Что добавлено:**
+- `ExtraService` entity — переписана по стандарту (private set, `Create`, `Update`, `BusinessRuleException`)
+- `IExtraServiceRepository` — расширен: `GetAllAsync`, `GetByIdAsync`, `AddAsync`, `UpdateAsync`, `DeleteAsync`
+- `ExtraServiceRepository` — реализованы все новые методы
+- DTOs: `ExtraServiceDto`, `CreateExtraServiceRequest`, `UpdateExtraServiceRequest`
+- CQRS (5 features): `GetExtraServices`, `GetExtraServiceById`, `CreateExtraService` + Validator, `UpdateExtraService` + Validator, `DeleteExtraService`
+- `ExtraServicesController` — 5 endpoints (см. таблицу)
+- Маппинг вынесен в `GetExtraServicesHandler.ToDto()` — используется всеми хендлерами (DRY)
+- Сборка: **0 ошибок**, миграция не нужна (таблица уже существует)
+
+#### Endpoints ExtraServices
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| GET | /api/extra-services | Публичный (только активные) |
+| GET | /api/extra-services/{id} | Публичный |
+| POST | /api/extra-services | Admin |
+| PUT | /api/extra-services/{id} | Admin |
+| DELETE | /api/extra-services/{id} | Admin |
+
 ## Текущий фокус
 > **Следующий шаг**: Orders: `AssignCleaner` → `ChangeStatus` → `CancelOrder`
-> либо Content: `Page`, `CallBackRequest` — конфигурации, миграции, CQRS, Controllers
+> либо Content: `Page` — конфигурация, миграция, CQRS, Controller

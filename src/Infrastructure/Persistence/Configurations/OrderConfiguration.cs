@@ -38,7 +38,12 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(x => x.Bathrooms).IsRequired();
         builder.Property(x => x.Comment).HasMaxLength(1000);
 
-        // Цена и статус
+        // Разбивка цены (сохраняется для истории расчёта)
+        builder.Property(x => x.AreaPrice).HasPrecision(10, 2).IsRequired();
+        builder.Property(x => x.BathroomsPrice).HasPrecision(10, 2).IsRequired();
+        builder.Property(x => x.ServicePrice).HasPrecision(10, 2).IsRequired();
+        builder.Property(x => x.ExtraServicesPrice).HasPrecision(10, 2).IsRequired();
+
         builder.Property(x => x.TotalPrice)
             .HasPrecision(10, 2)
             .IsRequired();
