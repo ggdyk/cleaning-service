@@ -89,6 +89,56 @@
 | 2026-02-27 | AddCategories       | Таблица Categories + FK к Services  |
 | 2026-03-01 | AddReviews          | Таблица Reviews с модерацией        |
 
+## Сделано сегодня (2026-03-03)
+
+### Задача: Разграничить права пользователей и админов (phase-5, auth, priority-high) ✅
+
+**Выполнено:**
+- `src/Api/Authorization/Policies.cs` — константы именованных политик: `AdminOnly`, `AdminOrManager`, `CleanerOnly`, `Staff`
+- `Program.cs` — заменён `AddAuthorization()` на `AddAuthorization(options => ...)` с 4 зарегистрированными политиками
+- `FAQController.cs`, `ReviewsController.cs` — `[Authorize(Roles = "Admin,Manager")]` заменено на `[Authorize(Policy = Policies.AdminOrManager)]`
+- `TestController.cs` — переписан: 5 endpoints для ручной проверки всех политик через Swagger
+- `UserConfiguration.cs` — добавлен `HasIndex(x => x.Role).HasDatabaseName("IX_Users_Role")`
+- Миграция `AddUserRoleIndex` (20260302193048) — создана и применена в БД
+
+**Что уже было готово до задачи:**
+- `UserRole` enum в Domain (Client/Cleaner/Manager/Admin) — роли были с самого начала
+- `User.Role` + `ChangeRole()` — в Entity
+- JWT генерирует `ClaimTypes.Role` с `user.Role.ToString()` — работало с момента Auth реализации
+
+**Проблемы при реализации:** не возникало — база была подготовлена правильно.
+
+**Критерии готовности:**
+- [x] Админские endpoints доступны только Admin/Manager → `[Authorize(Policy = Policies.AdminOrManager)]`
+- [x] Обычные пользователи получают 403 → проверяется через `/api/test/admin-only`
+- Сборка: **0 ошибок**
+
+#### Endpoints TestController (для ручной проверки)
+| URL | Политика | 200 | 403 |
+|-----|----------|-----|-----|
+| GET /api/test/public | — | Все | — |
+| GET /api/test/me | `[Authorize]` | Любой залогиненный | Анонимный → 401 |
+| GET /api/test/admin-only | `AdminOnly` | Admin | Client, Cleaner, Manager |
+| GET /api/test/admin-or-manager | `AdminOrManager` | Admin, Manager | Client, Cleaner |
+| GET /api/test/cleaner-only | `CleanerOnly` | Cleaner | Admin, Client, Manager |
+| GET /api/test/staff | `Staff` | Admin, Manager, Cleaner | Client |
+
+## Осталось сделать
+
+### Приоритет 1 — Orders (Core Domain)
+- [ ] CQRS: `AssignCleaner` — Command + Handler (Manager назначает уборщика на заказ)
+- [ ] CQRS: `ChangeStatus` — Command + Handler (Cleaner: InProgress → Completed)
+- [ ] CQRS: `CancelOrder` — Command + Handler (Client отменяет New-заказ)
+- [ ] Endpoints в `OrdersController` для Manager и Cleaner
+
+### Приоритет 2 — Content
+- [ ] `Page`, `CallBackRequest` — EF-конфигурации, миграции, CQRS, Controllers
+
+### Приоритет 3 — Payment, Notifications, Admin
+- [ ] Payment: mock-реализация
+- [ ] Notifications: Domain Events из Orders → email
+- [ ] Admin: статистика, управление пользователями
+
 ## Сделано сегодня (2026-03-02)
 
 ### Задача: Создать endpoints для отзывов (phase-4, backend, priority-medium)
