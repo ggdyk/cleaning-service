@@ -1,3 +1,4 @@
+using Api.Authorization;
 using Application.DTOs.Reviews;
 using Application.Features.Reviews.Admin.ApproveReview;
 using Application.Features.Reviews.Admin.GetAllReviews;
@@ -72,7 +73,7 @@ public class ReviewsController : ControllerBase
     /// Получить все отзывы (любой статус). Только для Admin/Manager.
     /// </summary>
     [HttpGet("admin")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<ActionResult<IReadOnlyList<ReviewAdminResponse>>> GetAll()
     {
         var result = await _mediator.Send(new GetAllReviewsQuery());
@@ -83,7 +84,7 @@ public class ReviewsController : ControllerBase
     /// Получить отзывы, ожидающие модерации. Только для Admin/Manager.
     /// </summary>
     [HttpGet("admin/pending")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<ActionResult<IReadOnlyList<ReviewAdminResponse>>> GetPending()
     {
         var result = await _mediator.Send(new GetPendingReviewsQuery());
@@ -94,7 +95,7 @@ public class ReviewsController : ControllerBase
     /// Одобрить отзыв. Только для Admin/Manager.
     /// </summary>
     [HttpPut("admin/{id:int}/approve")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<ActionResult<ReviewAdminResponse>> Approve(int id)
     {
         var moderatorId = GetCurrentUserId();
@@ -106,7 +107,7 @@ public class ReviewsController : ControllerBase
     /// Отклонить отзыв. Только для Admin/Manager.
     /// </summary>
     [HttpPut("admin/{id:int}/reject")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<ActionResult<ReviewAdminResponse>> Reject(int id)
     {
         var moderatorId = GetCurrentUserId();
