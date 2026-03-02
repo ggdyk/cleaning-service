@@ -61,8 +61,17 @@
 - [x] `Review` entity — переписан по стандарту (private set, Create, Approve, Reject, XML-комментарии)
 - [x] `ReviewConfiguration` — EF-конфигурация, индексы (ModerationStatus, UserId, OrderId partial)
 - [x] Миграция `AddReviews` (20260301134142) — таблица Reviews создана в БД
-- [ ] `IReviewRepository` + `ReviewRepository` — CRUD
-- [ ] CQRS + Controller для Review
+- [x] `IReviewRepository` + `ReviewRepository` — GetApproved, GetPending, GetAll, GetById, Add, Update
+- [x] DTOs: `ReviewResponse`, `ReviewAdminResponse`, `CreateReviewRequest`
+- [x] CQRS: `GetReviews` — публичный, только Approved
+- [x] CQRS: `CreateReview` — Command + Handler + Validator (FluentValidation)
+- [x] CQRS: `GetAllReviews` — все отзывы для Admin/Manager
+- [x] CQRS: `GetPendingReviews` — очередь модерации для Admin/Manager
+- [x] CQRS: `ApproveReview` — Command + Handler (вызывает review.Approve())
+- [x] CQRS: `RejectReview` — Command + Handler (вызывает review.Reject())
+- [x] `ReviewsController` — 6 endpoints (см. таблицу ниже)
+- [x] Регистрация `IReviewRepository → ReviewRepository` в Infrastructure/DependencyInjection.cs
+- [x] Сборка: **0 ошибок**
 - [ ] `Page`, `CallBackRequest` — конфигурации и миграции
 - [ ] CQRS + Controllers для Page, CallBackRequest
 
@@ -79,6 +88,40 @@
 | 2026-02-24 | AddFAQs             | Таблица FAQs + поля _kk для Services|
 | 2026-02-27 | AddCategories       | Таблица Categories + FK к Services  |
 | 2026-03-01 | AddReviews          | Таблица Reviews с модерацией        |
+
+## Сделано сегодня (2026-03-02)
+
+### Задача: Создать endpoints для отзывов (phase-4, backend, priority-medium)
+
+**Выполнено:**
+- `IReviewRepository` — интерфейс: GetApprovedAsync, GetPendingAsync, GetAllAsync, GetByIdAsync, AddAsync, UpdateAsync
+- `ReviewRepository` — реализация с фильтрацией по `ModerationStatus`
+- DTOs: `ReviewResponse` (публичный), `ReviewAdminResponse` (с полями модерации), `CreateReviewRequest`
+- CQRS (6 features):
+  - `GetReviews` — публичный, только Approved, сортировка по убыванию даты
+  - `CreateReview` — создаёт Review со статусом Pending, с FluentValidation валидатором
+  - `GetAllReviews` — все отзывы для Admin/Manager
+  - `GetPendingReviews` — только Pending, сортировка по возрастанию (FIFO модерация)
+  - `ApproveReview` — вызывает `review.Approve(moderatorId)` через Domain метод
+  - `RejectReview` — вызывает `review.Reject(moderatorId)` через Domain метод
+- `ReviewsController` — 6 endpoints
+- Регистрация DI в `Infrastructure/DependencyInjection.cs`
+- Сборка: **0 ошибок**
+
+#### Endpoints Reviews
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| GET | /api/reviews | Публичный |
+| POST | /api/reviews | Авторизованный |
+| GET | /api/reviews/admin | Admin, Manager |
+| GET | /api/reviews/admin/pending | Admin, Manager |
+| PUT | /api/reviews/admin/{id}/approve | Admin, Manager |
+| PUT | /api/reviews/admin/{id}/reject | Admin, Manager |
+
+**Архитектурные решения:**
+- Имя автора берётся из `user.GetFullName()` через `IUserRepository` в контроллере — пользователь не может подменить имя
+- `ApproveReview`/`RejectReview` не принимают тело запроса — всё управляется через URL и moderatorId из токена
+- `InvalidOperationException` (повторная модерация) обрабатывается `ExceptionHandlingMiddleware`
 
 ## Сделано сегодня (2026-03-01)
 
@@ -136,5 +179,5 @@
 - В Domain-сущностях `Page`, `CallBackRequest`, `Payment` — CS8618 предупреждения (nullable свойства без инициализации). Существовали до текущей работы, не критично.
 
 ## Текущий фокус
-> **Следующий шаг**: `IReviewRepository` → `ReviewRepository` → CQRS Features → `ReviewsController`
-> либо Orders: `AssignCleaner` → `ChangeStatus` → `CancelOrder`
+> **Следующий шаг**: Orders: `AssignCleaner` → `ChangeStatus` → `CancelOrder`
+> либо Content: `Page`, `CallBackRequest` — конфигурации, миграции, CQRS, Controllers

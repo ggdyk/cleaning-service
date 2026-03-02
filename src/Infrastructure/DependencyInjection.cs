@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IFAQRepository, FAQRepository>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
 
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
