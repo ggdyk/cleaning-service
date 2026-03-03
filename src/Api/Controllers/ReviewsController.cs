@@ -1,9 +1,4 @@
-using Api.Authorization;
 using Application.DTOs.Reviews;
-using Application.Features.Reviews.Admin.ApproveReview;
-using Application.Features.Reviews.Admin.GetAllReviews;
-using Application.Features.Reviews.Admin.GetPendingReviews;
-using Application.Features.Reviews.Admin.RejectReview;
 using Application.Features.Reviews.CreateReview;
 using Application.Features.Reviews.GetReviews;
 using Application.Interfaces;
@@ -63,56 +58,6 @@ public class ReviewsController : ControllerBase
         var result = await _mediator.Send(command);
 
         return StatusCode(201, result);
-    }
-
-    // =========================================================================
-    // Админские endpoints (только Admin и Manager)
-    // =========================================================================
-
-    /// <summary>
-    /// Получить все отзывы (любой статус). Только для Admin/Manager.
-    /// </summary>
-    [HttpGet("admin")]
-    [Authorize(Policy = Policies.AdminOrManager)]
-    public async Task<ActionResult<IReadOnlyList<ReviewAdminResponse>>> GetAll()
-    {
-        var result = await _mediator.Send(new GetAllReviewsQuery());
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Получить отзывы, ожидающие модерации. Только для Admin/Manager.
-    /// </summary>
-    [HttpGet("admin/pending")]
-    [Authorize(Policy = Policies.AdminOrManager)]
-    public async Task<ActionResult<IReadOnlyList<ReviewAdminResponse>>> GetPending()
-    {
-        var result = await _mediator.Send(new GetPendingReviewsQuery());
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Одобрить отзыв. Только для Admin/Manager.
-    /// </summary>
-    [HttpPut("admin/{id:int}/approve")]
-    [Authorize(Policy = Policies.AdminOrManager)]
-    public async Task<ActionResult<ReviewAdminResponse>> Approve(int id)
-    {
-        var moderatorId = GetCurrentUserId();
-        var result = await _mediator.Send(new ApproveReviewCommand(id, moderatorId));
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Отклонить отзыв. Только для Admin/Manager.
-    /// </summary>
-    [HttpPut("admin/{id:int}/reject")]
-    [Authorize(Policy = Policies.AdminOrManager)]
-    public async Task<ActionResult<ReviewAdminResponse>> Reject(int id)
-    {
-        var moderatorId = GetCurrentUserId();
-        var result = await _mediator.Send(new RejectReviewCommand(id, moderatorId));
-        return Ok(result);
     }
 
     // -------------------------------------------------------------------------

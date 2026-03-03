@@ -16,6 +16,9 @@ public static class DependencyInjection
         // Регистрация FluentValidation
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
+        // Регистрация IStringLocalizer<T> — читает из .resx файлов (Resources/)
+        services.AddLocalization();
+
         // Языковой контекст запроса: middleware пишет, хендлеры читают
         services.AddScoped<LanguageContext>();
         services.AddScoped<ILanguageContext>(sp => sp.GetRequiredService<LanguageContext>());

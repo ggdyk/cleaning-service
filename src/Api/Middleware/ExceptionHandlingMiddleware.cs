@@ -1,7 +1,9 @@
 using System.Text.Json;
 using Api.Models;
+using Application.Resources;
 using Domain.Exceptions;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Api.Middleware;
 
@@ -10,6 +12,7 @@ public sealed class ExceptionHandlingMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
     private readonly IHostEnvironment _environment;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -19,11 +22,13 @@ public sealed class ExceptionHandlingMiddleware
     public ExceptionHandlingMiddleware(
         RequestDelegate next,
         ILogger<ExceptionHandlingMiddleware> logger,
-        IHostEnvironment environment)
+        IHostEnvironment environment,
+        IStringLocalizer<ErrorMessages> localizer)
     {
         _next = next;
         _logger = logger;
         _environment = environment;
+        _localizer = localizer;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -43,16 +48,20 @@ public sealed class ExceptionHandlingMiddleware
         var (statusCode, error, message, validationErrors) = exception switch
         {
             NotFoundException ex =>
-                (StatusCodes.Status404NotFound, "NotFound", ex.Message, (IDictionary<string, string[]>?)null),
+                (StatusCodes.Status404NotFound, "NotFound",
+                    string.Format(_localizer["NotFoundTemplate"], ex.EntityName, ex.EntityId),
+                    (IDictionary<string, string[]>?)null),
 
             BusinessRuleException ex =>
                 (StatusCodes.Status409Conflict, "BusinessRuleViolation", ex.Message, null),
 
-            ForbiddenException ex =>
-                (StatusCodes.Status403Forbidden, "Forbidden", ex.Message, null),
+            ForbiddenException =>
+                (StatusCodes.Status403Forbidden, "Forbidden",
+                    _localizer["Forbidden"].Value, null),
 
             ValidationException ex =>
-                (StatusCodes.Status400BadRequest, "ValidationError", "Ошибка валидации.",
+                (StatusCodes.Status400BadRequest, "ValidationError",
+                    _localizer["ValidationError"].Value,
                     ex.Errors
                         .GroupBy(e => e.PropertyName)
                         .ToDictionary(
@@ -89,6 +98,6 @@ public sealed class ExceptionHandlingMiddleware
     {
         return _environment.IsDevelopment()
             ? exception.ToString()
-            : "Произошла внутренняя ошибка сервера. Обратитесь в поддержку, указав TraceId.";
+            : _localizer["InternalError"].Value;
     }
 }

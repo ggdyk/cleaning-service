@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- ─── Auth: Register ─── -->
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Email обязателен.</value>
+  </data>
+  <data name="EmailInvalidFormat" xml:space="preserve">
+    <value>Неправильный формат email.</value>
+  </data>
+  <data name="EmailMaxLength" xml:space="preserve">
+    <value>Email не может превышать 255 символов.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Пароль обязателен.</value>
+  </data>
+  <data name="PasswordMinLength" xml:space="preserve">
+    <value>Пароль должен быть минимум 8 символов.</value>
+  </data>
+  <data name="PasswordMaxLength" xml:space="preserve">
+    <value>Пароль не может превышать 100 символов.</value>
+  </data>
+  <data name="PasswordUpperCase" xml:space="preserve">
+    <value>Пароль должен содержать минимум 1 заглавную букву.</value>
+  </data>
+  <data name="PasswordLowerCase" xml:space="preserve">
+    <value>Пароль должен содержать минимум 1 строчную букву.</value>
+  </data>
+  <data name="PasswordDigit" xml:space="preserve">
+    <value>Пароль должен содержать минимум 1 цифру.</value>
+  </data>
+  <data name="FirstNameRequired" xml:space="preserve">
+    <value>Имя обязательно.</value>
+  </data>
+  <data name="FirstNameMaxLength" xml:space="preserve">
+    <value>Имя не может превышать 100 символов.</value>
+  </data>
+  <data name="LastNameRequired" xml:space="preserve">
+    <value>Фамилия обязательна.</value>
+  </data>
+  <data name="LastNameMaxLength" xml:space="preserve">
+    <value>Фамилия не может превышать 100 символов.</value>
+  </data>
+  <data name="PhoneRequired" xml:space="preserve">
+    <value>Телефон обязателен.</value>
+  </data>
+  <data name="PhoneMinLength" xml:space="preserve">
+    <value>Телефон должен быть минимум 10 символов.</value>
+  </data>
+  <data name="PhoneMaxLength" xml:space="preserve">
+    <value>Телефон не может превышать 20 символов.</value>
+  </data>
+  <data name="CityMaxLength" xml:space="preserve">
+    <value>Город не может превышать 100 символов.</value>
+  </data>
+
+  <!-- ─── Orders: CreateOrder ─── -->
+  <data name="CityRequired" xml:space="preserve">
+    <value>Необходимо выбрать город.</value>
+  </data>
+  <data name="TimeSlotRequired" xml:space="preserve">
+    <value>Необходимо выбрать временной слот.</value>
+  </data>
+  <data name="StreetRequired" xml:space="preserve">
+    <value>Улица обязательна.</value>
+  </data>
+  <data name="StreetMaxLength" xml:space="preserve">
+    <value>Улица не может превышать 255 символов.</value>
+  </data>
+  <data name="HouseRequired" xml:space="preserve">
+    <value>Номер дома обязателен.</value>
+  </data>
+  <data name="HouseMaxLength" xml:space="preserve">
+    <value>Номер дома не может превышать 50 символов.</value>
+  </data>
+  <data name="ApartmentMaxLength" xml:space="preserve">
+    <value>Квартира не может превышать 20 символов.</value>
+  </data>
+  <data name="AreaPositive" xml:space="preserve">
+    <value>Площадь должна быть больше нуля.</value>
+  </data>
+  <data name="BathroomsNonNegative" xml:space="preserve">
+    <value>Количество санузлов не может быть отрицательным.</value>
+  </data>
+  <data name="CommentMaxLength" xml:space="preserve">
+    <value>Комментарий не может превышать 1000 символов.</value>
+  </data>
+  <data name="ServicesRequired" xml:space="preserve">
+    <value>Необходимо выбрать хотя бы одну услугу.</value>
+  </data>
+  <data name="ServiceIdInvalid" xml:space="preserve">
+    <value>Некорректный ID услуги.</value>
+  </data>
+  <data name="QuantityPositive" xml:space="preserve">
+    <value>Количество должно быть больше нуля.</value>
+  </data>
+  <data name="ExtraServiceIdInvalid" xml:space="preserve">
+    <value>Некорректный ID дополнительной услуги.</value>
+  </data>
+
+  <!-- ─── Calculator: CalculatePrice ─── -->
+  <data name="CityIdPositive" xml:space="preserve">
+    <value>CityId должен быть положительным числом.</value>
+  </data>
+  <data name="AreaMaxValue" xml:space="preserve">
+    <value>Площадь не может превышать 10 000 кв.м.</value>
+  </data>
+  <data name="BathroomsMaxValue" xml:space="preserve">
+    <value>Количество санузлов не может превышать 20.</value>
+  </data>
+  <data name="ServiceIdPositive" xml:space="preserve">
+    <value>ServiceId должен быть положительным числом.</value>
+  </data>
+  <data name="ExtraServiceIdsPositive" xml:space="preserve">
+    <value>Все идентификаторы дополнительных услуг должны быть положительными.</value>
+  </data>
+
+  <!-- ─── Callbacks: SubmitCallbackRequest ─── -->
+  <data name="NameRequired" xml:space="preserve">
+    <value>Имя обязательно.</value>
+  </data>
+  <data name="NameMaxLength" xml:space="preserve">
+    <value>Имя не должно превышать 200 символов.</value>
+  </data>
+  <data name="PhoneCallbackRequired" xml:space="preserve">
+    <value>Номер телефона обязателен.</value>
+  </data>
+  <data name="PhoneCallbackMaxLength" xml:space="preserve">
+    <value>Номер телефона не должен превышать 30 символов.</value>
+  </data>
+  <data name="PhoneInvalidChars" xml:space="preserve">
+    <value>Номер телефона содержит недопустимые символы.</value>
+  </data>
+  <data name="PreferredTimeMaxLength" xml:space="preserve">
+    <value>Удобное время не должно превышать 200 символов.</value>
+  </data>
+
+  <!-- ─── FAQ: CreateFAQ / UpdateFAQ ─── -->
+  <data name="FaqQuestionRuRequired" xml:space="preserve">
+    <value>Вопрос на русском обязателен.</value>
+  </data>
+  <data name="FaqQuestionKkRequired" xml:space="preserve">
+    <value>Вопрос на казахском обязателен.</value>
+  </data>
+  <data name="FaqQuestionEnRequired" xml:space="preserve">
+    <value>Вопрос на английском обязателен.</value>
+  </data>
+  <data name="FaqAnswerRuRequired" xml:space="preserve">
+    <value>Ответ на русском обязателен.</value>
+  </data>
+  <data name="FaqAnswerKkRequired" xml:space="preserve">
+    <value>Ответ на казахском обязателен.</value>
+  </data>
+  <data name="FaqAnswerEnRequired" xml:space="preserve">
+    <value>Ответ на английском обязателен.</value>
+  </data>
+  <data name="SortOrderNonNegative" xml:space="preserve">
+    <value>Порядок сортировки не может быть отрицательным.</value>
+  </data>
+  <data name="InvalidFaqId" xml:space="preserve">
+    <value>Некорректный идентификатор FAQ.</value>
+  </data>
+
+  <!-- ─── ExtraServices: Create / Update ─── -->
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Название обязательно.</value>
+  </data>
+  <data name="DescriptionRequired" xml:space="preserve">
+    <value>Описание обязательно.</value>
+  </data>
+  <data name="PriceNonNegative" xml:space="preserve">
+    <value>Цена не может быть отрицательной.</value>
+  </data>
+  <data name="UnitRequired" xml:space="preserve">
+    <value>Единица измерения обязательна.</value>
+  </data>
+
+  <!-- ─── Reviews: CreateReview ─── -->
+  <data name="AuthorNameRequired" xml:space="preserve">
+    <value>Имя автора обязательно.</value>
+  </data>
+  <data name="AuthorNameMaxLength" xml:space="preserve">
+    <value>Имя автора не должно превышать 200 символов.</value>
+  </data>
+  <data name="RatingRange" xml:space="preserve">
+    <value>Оценка должна быть от 1 до 5.</value>
+  </data>
+  <data name="ReviewTextRequired" xml:space="preserve">
+    <value>Текст отзыва обязателен.</value>
+  </data>
+  <data name="ReviewTextMaxLength" xml:space="preserve">
+    <value>Текст отзыва не должен превышать 4000 символов.</value>
+  </data>
+</root>

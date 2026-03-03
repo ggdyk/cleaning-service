@@ -3,9 +3,11 @@ using Application.Features.Auth.Login;
 using Application.Features.Auth.Logout;
 using Application.Features.Auth.RefreshToken;
 using Application.Features.Auth.Register;
+using Application.Resources;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using System.Security.Claims;
 
 namespace Api.Controllers;
@@ -15,10 +17,12 @@ namespace Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public AuthController(IMediator mediator)
+    public AuthController(IMediator mediator, IStringLocalizer<ErrorMessages> localizer)
     {
         _mediator = mediator;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -65,10 +69,10 @@ public class AuthController : ControllerBase
             ?? User.FindFirst("sub")?.Value;
 
         if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
-            throw new UnauthorizedAccessException("Не удалось определить пользователя");
+            throw new UnauthorizedAccessException(_localizer["CannotDetermineUser"]);
 
         var command = new LogoutCommand(userId);
         await _mediator.Send(command);
-        return Ok(new { message = "Успешный выход" });
+        return Ok(new { message = _localizer["LogoutSuccess"].Value });
     }
 }

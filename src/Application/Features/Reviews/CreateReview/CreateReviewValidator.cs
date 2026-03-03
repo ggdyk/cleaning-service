@@ -1,20 +1,22 @@
+using Application.Resources;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Features.Reviews.CreateReview;
 
 public class CreateReviewValidator : AbstractValidator<CreateReviewCommand>
 {
-    public CreateReviewValidator()
+    public CreateReviewValidator(IStringLocalizer<ValidationMessages> L)
     {
         RuleFor(x => x.AuthorName)
-            .NotEmpty().WithMessage("Имя автора обязательно.")
-            .MaximumLength(200).WithMessage("Имя автора не должно превышать 200 символов.");
+            .NotEmpty().WithMessage(L["AuthorNameRequired"])
+            .MaximumLength(200).WithMessage(L["AuthorNameMaxLength"]);
 
         RuleFor(x => x.Request.Rating)
-            .InclusiveBetween(1, 5).WithMessage("Оценка должна быть от 1 до 5.");
+            .InclusiveBetween(1, 5).WithMessage(L["RatingRange"]);
 
         RuleFor(x => x.Request.ReviewText)
-            .NotEmpty().WithMessage("Текст отзыва обязателен.")
-            .MaximumLength(4000).WithMessage("Текст отзыва не должен превышать 4000 символов.");
+            .NotEmpty().WithMessage(L["ReviewTextRequired"])
+            .MaximumLength(4000).WithMessage(L["ReviewTextMaxLength"]);
     }
 }
