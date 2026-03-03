@@ -76,9 +76,9 @@
 - [x] `CallbackRequestsController` — POST /api/callbacks (публичный)
 - [ ] `Page` — конфигурация, миграция, CQRS, Controller
 
-### Admin (Generic Context) ❌ — не начат
+### Admin (Generic Context) 🔄 — частично
+- [x] `AdminController` — модерация отзывов: GET /api/admin/reviews, GET /api/admin/reviews/pending, PUT /api/admin/reviews/{id}/approve, PUT /api/admin/reviews/{id}/reject
 - [ ] Статистика, управление пользователями
-- [ ] Controller
 
 ## Миграции
 | Дата       | Имя                 | Описание                            |
@@ -94,6 +94,89 @@
 | 2026-03-01 | AddReviews          | Таблица Reviews с модерацией        |
 | 2026-03-02 | AddPageEntity       | Таблица Pages                       |
 | 2026-03-03 | AddUserRoleIndex    | Индекс IX_Users_Role                |
+
+## Сделано сегодня (2026-03-03) — продолжение 2
+
+### Задача 5.4: Реализовать модерацию отзывов (phase-5, backend, priority-medium) ✅
+
+**Решение:** Вся CQRS-логика уже была реализована ранее. Задача потребовала только создать `AdminController` с правильным URL-префиксом `/api/admin` и перенести туда admin-endpoints из `ReviewsController`.
+
+**Изменения:**
+- Создан `src/Api/Controllers/AdminController.cs` — маршрут `api/admin`, политика `AdminOrManager` на весь контроллер (`[Authorize(Policy = Policies.AdminOrManager)]` на классе)
+- `ReviewsController.cs` очищен от admin-endpoints (удалены GET /api/reviews/admin, GET /api/reviews/admin/pending, PUT /api/reviews/admin/{id}/approve, PUT /api/reviews/admin/{id}/reject)
+
+**Переиспользуемые CQRS-фичи:**
+- `GetAllReviewsQuery` + Handler — все отзывы, сортировка по убыванию даты
+- `GetPendingReviewsQuery` + Handler — только Pending, FIFO сортировка
+- `ApproveReviewCommand` + Handler — вызывает `review.Approve(moderatorId)` + сохранение
+- `RejectReviewCommand` + Handler — вызывает `review.Reject(moderatorId)` + сохранение
+
+**Сборка:** 0 ошибок, 0 предупреждений
+
+#### Endpoints AdminController (модерация отзывов)
+| Метод | URL | Описание |
+|-------|-----|----------|
+| GET | /api/admin/reviews | Все отзывы (Pending/Approved/Rejected) |
+| GET | /api/admin/reviews/pending | Только ожидающие модерации (FIFO) |
+| PUT | /api/admin/reviews/{id}/approve | Одобрить отзыв |
+| PUT | /api/admin/reviews/{id}/reject | Отклонить отзыв |
+
+#### Итоговые endpoints ReviewsController (после очистки)
+| Метод | URL | Доступ |
+|-------|-----|--------|
+| GET | /api/reviews | Публичный (только Approved) |
+| POST | /api/reviews | Авторизованный |
+
+## Сделано сегодня (2026-03-03) — продолжение
+
+### Задача 4.7: Локализовать сообщения об ошибках (phase-4, backend, priority-medium) ✅
+
+**Механизм:**
+- `IStringLocalizer<T>` — стандартный .NET механизм (`.resx` файлы)
+- `LanguageMiddleware` устанавливает `CultureInfo.CurrentUICulture` → `IStringLocalizer` автоматически выбирает язык
+- Валидаторы (Transient) получают `IStringLocalizer<ValidationMessages>` в конструктор — т.к. Transient, конструктор выполняется ПОСЛЕ установки культуры, язык корректен
+- `ExceptionHandlingMiddleware` получает `IStringLocalizer<ErrorMessages>` в конструктор — `_localizer["key"]` читает `CultureInfo.CurrentUICulture` в момент вызова (per-request)
+
+**Созданные файлы:**
+- `Application/Resources/ErrorMessages.cs` — маркер-класс
+- `Application/Resources/ErrorMessages.resx` — системные сообщения (RU, нейтральный)
+- `Application/Resources/ErrorMessages.en.resx` — системные сообщения (EN)
+- `Application/Resources/ValidationMessages.cs` — маркер-класс
+- `Application/Resources/ValidationMessages.resx` — сообщения валидации (RU, нейтральный)
+- `Application/Resources/ValidationMessages.en.resx` — сообщения валидации (EN)
+
+**Обновлённые файлы:**
+- `Application/Application.csproj` — добавлен `Microsoft.Extensions.Localization 9.0.0`
+- `Application/DependencyInjection.cs` — добавлен `services.AddLocalization()`
+- `Api/Middleware/LanguageMiddleware.cs` — устанавливает `CultureInfo.CurrentCulture + CurrentUICulture`
+- `Api/Middleware/ExceptionHandlingMiddleware.cs` — локализованы: NotFound шаблон, Forbidden, ValidationError заголовок, InternalError
+- `Features/Auth/Register/RegisterRequestValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/FAQ/Admin/CreateFAQ/CreateFAQValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/FAQ/Admin/UpdateFAQ/UpdateFAQValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/Calculator/CalculatePrice/CalculatePriceValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/Orders/CreateOrder/CreateOrderValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/Callbacks/SubmitCallbackRequest/SubmitCallbackRequestValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/ExtraServices/CreateExtraService/CreateExtraServiceValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/ExtraServices/UpdateExtraService/UpdateExtraServiceValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/Reviews/CreateReview/CreateReviewValidator.cs` — `IStringLocalizer<ValidationMessages>`
+- `Features/Auth/Login/LoginHandler.cs` — локализованы: InvalidCredentials, AccountDeactivated
+- `Features/Auth/RefreshToken/RefreshTokenHandler.cs` — локализованы: InvalidRefreshToken, RefreshTokenExpired, UserNotFoundOrDeactivated
+- `Api/Controllers/AuthController.cs` — локализованы: CannotDetermineUser, LogoutSuccess
+
+**Ключи ErrorMessages (11 ключей):** NotFoundTemplate, Forbidden, ValidationError, InternalError, InvalidCredentials, AccountDeactivated, InvalidRefreshToken, RefreshTokenExpired, UserNotFoundOrDeactivated, CannotDetermineUser, LogoutSuccess
+
+**Ключи ValidationMessages (42 ключа):** все сообщения из 9 валидаторов
+
+**Что НЕ локализовано (намеренно):**
+- `BusinessRuleException.Message` — сообщения бизнес-правил живут в Domain entities (RU), их перевод потребует переделки Domain слоя
+
+**Как работает определение языка:**
+1. `?lang=ru` / `?lang=en` — query-параметр (приоритет)
+2. `Accept-Language: en` заголовок
+3. `ru` по умолчанию
+4. `kk` (казахский) → `IStringLocalizer` fallback к нейтральному (RU)
+
+**Сборка:** 0 ошибок, 3 предупреждения (Payment.cs — были до задачи)
 
 ## Сделано сегодня (2026-03-03)
 
