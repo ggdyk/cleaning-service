@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- Middleware: NotFoundException -->
+  <data name="NotFoundTemplate" xml:space="preserve">
+    <value>{0} с ID '{1}' не найден.</value>
+  </data>
+
+  <!-- Middleware: ForbiddenException -->
+  <data name="Forbidden" xml:space="preserve">
+    <value>У вас нет прав для выполнения этой операции.</value>
+  </data>
+
+  <!-- Middleware: ValidationException (заголовок) -->
+  <data name="ValidationError" xml:space="preserve">
+    <value>Ошибка валидации.</value>
+  </data>
+
+  <!-- Middleware: 500 -->
+  <data name="InternalError" xml:space="preserve">
+    <value>Произошла внутренняя ошибка сервера. Обратитесь в поддержку, указав TraceId.</value>
+  </data>
+
+  <!-- LoginHandler -->
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Неверный email или пароль.</value>
+  </data>
+
+  <!-- LoginHandler -->
+  <data name="AccountDeactivated" xml:space="preserve">
+    <value>Аккаунт деактивирован.</value>
+  </data>
+
+  <!-- RefreshTokenHandler -->
+  <data name="InvalidRefreshToken" xml:space="preserve">
+    <value>Недействительный refresh token.</value>
+  </data>
+
+  <!-- RefreshTokenHandler -->
+  <data name="RefreshTokenExpired" xml:space="preserve">
+    <value>Refresh token истёк или был отозван.</value>
+  </data>
+
+  <!-- RefreshTokenHandler -->
+  <data name="UserNotFoundOrDeactivated" xml:space="preserve">
+    <value>Пользователь не найден или деактивирован.</value>
+  </data>
+
+  <!-- AuthController -->
+  <data name="CannotDetermineUser" xml:space="preserve">
+    <value>Не удалось определить пользователя.</value>
+  </data>
+
+  <!-- AuthController -->
+  <data name="LogoutSuccess" xml:space="preserve">
+    <value>Успешный выход.</value>
+  </data>
+</root>

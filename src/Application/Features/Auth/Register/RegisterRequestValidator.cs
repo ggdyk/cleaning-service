@@ -1,40 +1,42 @@
 using Application.DTOs.Auth;
+using Application.Resources;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Features.Auth.Register;
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator()
+    public RegisterRequestValidator(IStringLocalizer<ValidationMessages> L)
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email обязателен")
-            .EmailAddress().WithMessage("Неправильный формат email")
-            .MaximumLength(255).WithMessage("Email не может превышать 255 символов");
+            .NotEmpty().WithMessage(L["EmailRequired"])
+            .EmailAddress().WithMessage(L["EmailInvalidFormat"])
+            .MaximumLength(255).WithMessage(L["EmailMaxLength"]);
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Пароль обязателен")
-            .MinimumLength(8).WithMessage("Пароль должен быть минимум 8 символов")
-            .MaximumLength(100).WithMessage("Пароль не может превышать 100 символов")
-            .Matches(@"[A-Z]").WithMessage("Пароль должен содержать минимум 1 заглавную букву")
-            .Matches(@"[a-z]").WithMessage("Пароль должен содержать минимум 1 строчную букву")
-            .Matches(@"[0-9]").WithMessage("Пароль должен содержать минимум 1 цифру");
+            .NotEmpty().WithMessage(L["PasswordRequired"])
+            .MinimumLength(8).WithMessage(L["PasswordMinLength"])
+            .MaximumLength(100).WithMessage(L["PasswordMaxLength"])
+            .Matches(@"[A-Z]").WithMessage(L["PasswordUpperCase"])
+            .Matches(@"[a-z]").WithMessage(L["PasswordLowerCase"])
+            .Matches(@"[0-9]").WithMessage(L["PasswordDigit"]);
 
         RuleFor(x => x.FirstName)
-            .NotEmpty().WithMessage("Имя обязательно")
-            .MaximumLength(100).WithMessage("Имя не может превышать 100 символов");
+            .NotEmpty().WithMessage(L["FirstNameRequired"])
+            .MaximumLength(100).WithMessage(L["FirstNameMaxLength"]);
 
         RuleFor(x => x.LastName)
-            .NotEmpty().WithMessage("Фамилия обязательна")
-            .MaximumLength(100).WithMessage("Фамилия не может превышать 100 символов");
+            .NotEmpty().WithMessage(L["LastNameRequired"])
+            .MaximumLength(100).WithMessage(L["LastNameMaxLength"]);
 
         RuleFor(x => x.Phone)
-            .NotEmpty().WithMessage("Телефон обязателен")
-            .MinimumLength(10).WithMessage("Телефон должен быть минимум 10 символов")
-            .MaximumLength(20).WithMessage("Телефон не может превышать 20 символов");
+            .NotEmpty().WithMessage(L["PhoneRequired"])
+            .MinimumLength(10).WithMessage(L["PhoneMinLength"])
+            .MaximumLength(20).WithMessage(L["PhoneMaxLength"]);
 
         RuleFor(x => x.City)
-            .MaximumLength(100).WithMessage("Город не может превышать 100 символов")
+            .MaximumLength(100).WithMessage(L["CityMaxLength"])
             .When(x => !string.IsNullOrEmpty(x.City));
     }
 }

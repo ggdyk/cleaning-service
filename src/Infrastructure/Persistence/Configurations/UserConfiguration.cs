@@ -58,5 +58,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.IsActive)
             .IsRequired();
+
+        // Индекс для выборки пользователей по роли (например, список уборщиков)
+        builder.HasIndex(x => x.Role)
+            .HasDatabaseName("IX_Users_Role");
     }
 }

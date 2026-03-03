@@ -1,3 +1,4 @@
+using System.Globalization;
 using Application.Services;
 
 namespace Api.Middleware;
@@ -23,7 +24,14 @@ public sealed class LanguageMiddleware
 
     public async Task InvokeAsync(HttpContext context, LanguageContext languageContext)
     {
-        languageContext.Language = Detect(context.Request);
+        var language = Detect(context.Request);
+        languageContext.Language = language;
+
+        // Устанавливаем культуру потока — IStringLocalizer<T> читает CultureInfo.CurrentUICulture
+        var culture = new CultureInfo(language);
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+
         await _next(context);
     }
 

@@ -1,7 +1,9 @@
 using Application.DTOs.Auth;
 using Application.Interfaces;
+using Application.Resources;
 using Domain.Entities;
 using MediatR;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Features.Auth.Login;
 
@@ -11,17 +13,20 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtService _jwtService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
     public LoginHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
-        IRefreshTokenRepository refreshTokenRepository)
+        IRefreshTokenRepository refreshTokenRepository,
+        IStringLocalizer<ErrorMessages> localizer)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
         _refreshTokenRepository = refreshTokenRepository;
+        _localizer = localizer;
     }
 
     public async Task<LoginResponse> Handle(LoginCommand command, CancellationToken cancellationToken)
@@ -32,19 +37,19 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
         {
-            throw new UnauthorizedAccessException("Неверный email или пароль");
+            throw new UnauthorizedAccessException(_localizer["InvalidCredentials"]);
         }
 
         // Проверить пароль
         if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {
-            throw new UnauthorizedAccessException("Неверный email или пароль");
+            throw new UnauthorizedAccessException(_localizer["InvalidCredentials"]);
         }
 
         // Проверить, что пользователь активен
         if (!user.IsActive)
         {
-            throw new UnauthorizedAccessException("Аккаунт деактивирован");
+            throw new UnauthorizedAccessException(_localizer["AccountDeactivated"]);
         }
 
         // Отозвать старые refresh токены
