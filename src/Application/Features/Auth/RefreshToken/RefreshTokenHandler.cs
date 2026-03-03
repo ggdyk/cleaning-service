@@ -1,7 +1,9 @@
 using Application.DTOs.Auth;
 using Application.Interfaces;
+using Application.Resources;
 using Domain.Entities;
 using MediatR;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Features.Auth.RefreshToken;
 
@@ -10,15 +12,18 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, RefreshT
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserRepository _userRepository;
     private readonly IJwtService _jwtService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
     public RefreshTokenHandler(
         IRefreshTokenRepository refreshTokenRepository,
         IUserRepository userRepository,
-        IJwtService jwtService)
+        IJwtService jwtService,
+        IStringLocalizer<ErrorMessages> localizer)
     {
         _refreshTokenRepository = refreshTokenRepository;
         _userRepository = userRepository;
         _jwtService = jwtService;
+        _localizer = localizer;
     }
 
     public async Task<RefreshTokenResponse> Handle(
@@ -31,20 +36,20 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, RefreshT
         var refreshToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken);
         if (refreshToken == null)
         {
-            throw new UnauthorizedAccessException("Недействительный refresh token");
+            throw new UnauthorizedAccessException(_localizer["InvalidRefreshToken"]);
         }
 
         // Проверить валидность токена
         if (!refreshToken.IsValid())
         {
-            throw new UnauthorizedAccessException("Refresh token истёк или был отозван");
+            throw new UnauthorizedAccessException(_localizer["RefreshTokenExpired"]);
         }
 
         // Получить пользователя
         var user = await _userRepository.GetByIdAsync(refreshToken.UserId);
         if (user == null || !user.IsActive)
         {
-            throw new UnauthorizedAccessException("Пользователь не найден или деактивирован");
+            throw new UnauthorizedAccessException(_localizer["UserNotFoundOrDeactivated"]);
         }
 
         // Сгенерировать новые токены

@@ -1,3 +1,4 @@
+using Api.Authorization;
 using Application.DTOs.FAQ;
 using Application.Features.FAQ.Admin.CreateFAQ;
 using Application.Features.FAQ.Admin.DeleteFAQ;
@@ -45,7 +46,7 @@ public class FAQController : ControllerBase
     /// Получить все FAQ включая неактивные. Только для Admin/Manager.
     /// </summary>
     [HttpGet("admin")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<ActionResult<IReadOnlyList<FaqResponse>>> GetAll()
     {
         var result = await _mediator.Send(new GetAllFAQsQuery());
@@ -56,7 +57,7 @@ public class FAQController : ControllerBase
     /// Создать новый FAQ. Только для Admin/Manager.
     /// </summary>
     [HttpPost("admin")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<ActionResult<FaqResponse>> Create([FromBody] CreateFaqRequest request)
     {
         var result = await _mediator.Send(new CreateFAQCommand(request));
@@ -67,7 +68,7 @@ public class FAQController : ControllerBase
     /// Обновить FAQ по id. Только для Admin/Manager.
     /// </summary>
     [HttpPut("admin/{id:int}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<ActionResult<FaqResponse>> Update(int id, [FromBody] UpdateFaqRequest request)
     {
         var result = await _mediator.Send(new UpdateFAQCommand(id, request));
@@ -78,7 +79,7 @@ public class FAQController : ControllerBase
     /// Удалить FAQ по id. Только для Admin/Manager.
     /// </summary>
     [HttpDelete("admin/{id:int}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Policy = Policies.AdminOrManager)]
     public async Task<IActionResult> Delete(int id)
     {
         await _mediator.Send(new DeleteFAQCommand(id));

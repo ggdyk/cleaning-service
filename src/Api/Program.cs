@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Api.Middleware;
+using Api.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,8 +78,26 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-// Добавляем поддержку авторизации (политики, роли и т.д.)
-builder.Services.AddAuthorization();
+// Добавляем поддержку авторизации с именованными политиками.
+// Политики читают ClaimTypes.Role из JWT — значение приходит из UserRole enum.
+builder.Services.AddAuthorization(options =>
+{
+    // Только Admin
+    options.AddPolicy(Policies.AdminOnly, policy =>
+        policy.RequireRole("Admin"));
+
+    // Admin или Manager — управление контентом, модерация отзывов/FAQ
+    options.AddPolicy(Policies.AdminOrManager, policy =>
+        policy.RequireRole("Admin", "Manager"));
+
+    // Только Cleaner — для endpoints уборщика
+    options.AddPolicy(Policies.CleanerOnly, policy =>
+        policy.RequireRole("Cleaner"));
+
+    // Операционный персонал: Manager, Admin, Cleaner
+    options.AddPolicy(Policies.Staff, policy =>
+        policy.RequireRole("Admin", "Manager", "Cleaner"));
+});
 
 
 //

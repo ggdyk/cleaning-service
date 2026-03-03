@@ -1,59 +1,61 @@
 using Application.DTOs.Orders;
+using Application.Resources;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Features.Orders.CreateOrder;
 
 public class CreateOrderValidator : AbstractValidator<CreateOrderRequest>
 {
-    public CreateOrderValidator()
+    public CreateOrderValidator(IStringLocalizer<ValidationMessages> L)
     {
         RuleFor(x => x.CityId)
-            .GreaterThan(0).WithMessage("Необходимо выбрать город");
+            .GreaterThan(0).WithMessage(L["CityRequired"]);
 
         RuleFor(x => x.TimeSlotId)
-            .GreaterThan(0).WithMessage("Необходимо выбрать временной слот");
+            .GreaterThan(0).WithMessage(L["TimeSlotRequired"]);
 
         RuleFor(x => x.Street)
-            .NotEmpty().WithMessage("Улица обязательна")
-            .MaximumLength(255).WithMessage("Улица не может превышать 255 символов");
+            .NotEmpty().WithMessage(L["StreetRequired"])
+            .MaximumLength(255).WithMessage(L["StreetMaxLength"]);
 
         RuleFor(x => x.House)
-            .NotEmpty().WithMessage("Номер дома обязателен")
-            .MaximumLength(50).WithMessage("Номер дома не может превышать 50 символов");
+            .NotEmpty().WithMessage(L["HouseRequired"])
+            .MaximumLength(50).WithMessage(L["HouseMaxLength"]);
 
         RuleFor(x => x.Apartment)
-            .MaximumLength(20).WithMessage("Квартира не может превышать 20 символов")
+            .MaximumLength(20).WithMessage(L["ApartmentMaxLength"])
             .When(x => x.Apartment != null);
 
         RuleFor(x => x.Area)
-            .GreaterThan(0).WithMessage("Площадь должна быть больше нуля");
+            .GreaterThan(0).WithMessage(L["AreaPositive"]);
 
         RuleFor(x => x.Bathrooms)
-            .GreaterThanOrEqualTo(0).WithMessage("Количество санузлов не может быть отрицательным");
+            .GreaterThanOrEqualTo(0).WithMessage(L["BathroomsNonNegative"]);
 
         RuleFor(x => x.Comment)
-            .MaximumLength(1000).WithMessage("Комментарий не может превышать 1000 символов")
+            .MaximumLength(1000).WithMessage(L["CommentMaxLength"])
             .When(x => x.Comment != null);
 
         RuleFor(x => x.Services)
-            .NotEmpty().WithMessage("Необходимо выбрать хотя бы одну услугу");
+            .NotEmpty().WithMessage(L["ServicesRequired"]);
 
         RuleForEach(x => x.Services).ChildRules(service =>
         {
             service.RuleFor(s => s.ServiceId)
-                .GreaterThan(0).WithMessage("Некорректный ID услуги");
+                .GreaterThan(0).WithMessage(L["ServiceIdInvalid"]);
 
             service.RuleFor(s => s.Quantity)
-                .GreaterThan(0).WithMessage("Количество должно быть больше нуля");
+                .GreaterThan(0).WithMessage(L["QuantityPositive"]);
         });
 
         RuleForEach(x => x.ExtraServices).ChildRules(extra =>
         {
             extra.RuleFor(e => e.ExtraServiceId)
-                .GreaterThan(0).WithMessage("Некорректный ID доп. услуги");
+                .GreaterThan(0).WithMessage(L["ExtraServiceIdInvalid"]);
 
             extra.RuleFor(e => e.Quantity)
-                .GreaterThan(0).WithMessage("Количество должно быть больше нуля");
+                .GreaterThan(0).WithMessage(L["QuantityPositive"]);
         });
     }
 }
