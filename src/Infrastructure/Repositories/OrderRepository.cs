@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,9 +32,35 @@ public class OrderRepository : IOrderRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<Order>> GetAllAsync(
+        OrderStatus? status = null,
+        DateTime? dateFrom = null,
+        DateTime? dateTo = null,
+        int? clientId = null,
+        CancellationToken ct = default)
+    {
+        var query = _context.Orders.AsQueryable();
+
+        if (status.HasValue)    query = query.Where(o => o.Status == status.Value);
+        if (dateFrom.HasValue)  query = query.Where(o => o.CreatedAt >= dateFrom.Value);
+        if (dateTo.HasValue)    query = query.Where(o => o.CreatedAt <= dateTo.Value);
+        if (clientId.HasValue)  query = query.Where(o => o.ClientId == clientId.Value);
+
+        return await query
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(ct);
+    }
+
     public async Task AddAsync(Order order)
     {
         await _context.Orders.AddAsync(order);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Order order)
+    {
+        // Заказ уже отслеживается EF (загружен через GetByIdAsync без AsNoTracking),
+        // достаточно сохранить изменения.
         await _context.SaveChangesAsync();
     }
 }

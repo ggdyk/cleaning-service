@@ -8,14 +8,26 @@ namespace Application.Interfaces;
 public interface ICalculatorSettingsRepository
 {
     /// <summary>
-    /// Получить настройки калькулятора для указанного города.
-    /// Возвращает <c>null</c>, если настройки не заданы.
+    /// Получить настройки для указанного города (только чтение, без отслеживания).
+    /// Используется калькулятором цен.
     /// </summary>
     Task<CalculatorSettings?> GetByCityIdAsync(int cityId, CancellationToken ct = default);
 
     /// <summary>
-    /// Получить настройки калькулятора по умолчанию (первая запись в БД).
-    /// Используется как fallback, если для города нет отдельных настроек.
+    /// Получить настройки по умолчанию (первая запись). Fallback для калькулятора.
     /// </summary>
     Task<CalculatorSettings?> GetDefaultAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Получить все настройки (все города). Для административного просмотра.
+    /// </summary>
+    Task<IReadOnlyList<CalculatorSettings>> GetAllAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Найти настройки для города с отслеживанием (для последующего обновления).
+    /// </summary>
+    Task<CalculatorSettings?> FindByCityIdAsync(int cityId, CancellationToken ct = default);
+
+    Task AddAsync(CalculatorSettings settings, CancellationToken ct = default);
+    Task SaveAsync(CancellationToken ct = default);
 }
