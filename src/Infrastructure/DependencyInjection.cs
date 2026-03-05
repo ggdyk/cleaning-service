@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<ICalculatorSettingsRepository, CalculatorSettingsRepository>();
         services.AddScoped<IExtraServiceRepository, ExtraServiceRepository>();
         services.AddScoped<IPageRepository, PageRepository>();
+        services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();

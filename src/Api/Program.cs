@@ -155,8 +155,9 @@ if (!app.Environment.IsProduction())
     app.UseSwaggerUI();
 }
 
-// Перенаправление HTTP → HTTPS
-app.UseHttpsRedirection();
+// Перенаправление HTTP → HTTPS (отключено в тестовом окружении)
+if (!app.Environment.IsEnvironment("Testing"))
+    app.UseHttpsRedirection();
 
 // Подключаем аутентификацию
 // ⚠️ ДОЛЖНО БЫТЬ ДО UseAuthorization
@@ -173,3 +174,6 @@ app.MapControllers();
 
 // Запуск приложения
 app.Run();
+
+// Делаем класс Program доступным для интеграционных тестов через WebApplicationFactory
+public partial class Program { }

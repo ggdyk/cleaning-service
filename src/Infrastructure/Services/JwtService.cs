@@ -53,7 +53,10 @@ public class JwtService : IJwtService
 
     public int? ValidateAccessToken(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
+        // MapInboundClaims = false: отключаем переименование стандартных JWT-клеймов
+        // в длинные CLR-типы (напр. "sub" → ClaimTypes.NameIdentifier).
+        // Так FindFirst(JwtRegisteredClaimNames.Sub) будет работать корректно.
+        var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
 
         try
