@@ -1,5 +1,6 @@
 using Domain.Common;
 using Domain.Enums;
+using Domain.Exceptions;
 
 namespace Domain.Entities;
 
@@ -48,5 +49,31 @@ public class CallBackRequest : BaseEntity
             Status = CallbackRequestStatus.New,
             CreatedAt = DateTime.UtcNow
         };
+    }
+
+    /// <summary>
+    /// Отметить заявку как обработанную (оператор позвонил клиенту).
+    /// Допустимо только из статуса New.
+    /// </summary>
+    public void Process()
+    {
+        if (Status != CallbackRequestStatus.New)
+            throw new BusinessRuleException(
+                $"Нельзя обработать заявку — она в статусе '{Status}'. Ожидается: New.");
+
+        Status = CallbackRequestStatus.Processed;
+    }
+
+    /// <summary>
+    /// Отклонить заявку (неверный номер, отказ клиента и т.д.).
+    /// Допустимо только из статуса New.
+    /// </summary>
+    public void Reject()
+    {
+        if (Status != CallbackRequestStatus.New)
+            throw new BusinessRuleException(
+                $"Нельзя отклонить заявку — она в статусе '{Status}'. Ожидается: New.");
+
+        Status = CallbackRequestStatus.Rejected;
     }
 }
