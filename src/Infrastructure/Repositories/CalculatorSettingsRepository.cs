@@ -24,4 +24,21 @@ public class CalculatorSettingsRepository : ICalculatorSettingsRepository
               .AsNoTracking()
               .OrderBy(s => s.Id)
               .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<CalculatorSettings>> GetAllAsync(CancellationToken ct = default)
+        => await _db.CalculatorSettings
+              .AsNoTracking()
+              .OrderBy(s => s.CityId)
+              .ToListAsync(ct);
+
+    // Отслеживаемая версия — для записи (Update/Add + SaveChanges)
+    public Task<CalculatorSettings?> FindByCityIdAsync(int cityId, CancellationToken ct = default)
+        => _db.CalculatorSettings
+              .FirstOrDefaultAsync(s => s.CityId == cityId, ct);
+
+    public async Task AddAsync(CalculatorSettings settings, CancellationToken ct = default)
+        => await _db.CalculatorSettings.AddAsync(settings, ct);
+
+    public Task SaveAsync(CancellationToken ct = default)
+        => _db.SaveChangesAsync(ct);
 }
