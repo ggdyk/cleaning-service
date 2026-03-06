@@ -105,7 +105,11 @@ builder.Services.AddAuthorization(options =>
 //
 
 // Регистрируем MVC контроллеры
-builder.Services.AddControllers();
+// JsonStringEnumConverter: enum-поля в JSON передаются строками ("Cancelled"), а не числами (4)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()));
 
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -187,13 +191,15 @@ if (!app.Environment.IsEnvironment("Testing"))
 
 // Подключаем аутентификацию
 // ⚠️ ДОЛЖНО БЫТЬ ДО UseAuthorization
+// ⚠️ ExceptionHandlingMiddleware должен быть ДО Authentication/Authorization,
+// чтобы перехватывать исключения из любого места пайплайна
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<LanguageMiddleware>();
+
 app.UseAuthentication();
 
 // Подключаем авторизацию
 app.UseAuthorization();
-
-app.UseMiddleware<LanguageMiddleware>();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Маппинг контроллеров
 app.MapControllers();
