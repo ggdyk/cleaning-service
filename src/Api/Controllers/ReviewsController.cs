@@ -10,8 +10,12 @@ using System.Security.Claims;
 
 namespace Api.Controllers;
 
+/// <summary>
+/// Отзывы клиентов о клининговом сервисе.
+/// </summary>
 [ApiController]
 [Route("api/reviews")]
+[Produces("application/json")]
 public class ReviewsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -28,10 +32,16 @@ public class ReviewsController : ControllerBase
     // =========================================================================
 
     /// <summary>
-    /// Получить список одобренных отзывов. Публичный доступ.
+    /// Получить список одобренных отзывов
     /// </summary>
+    /// <remarks>
+    /// Публичный endpoint — авторизация не требуется.
+    /// Возвращает только отзывы со статусом Approved (прошедшие модерацию).
+    /// </remarks>
+    /// <response code="200">Список одобренных отзывов</response>
     [HttpGet]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<ReviewResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<ReviewResponse>>> GetApproved()
     {
         var result = await _mediator.Send(new GetReviewsQuery());
@@ -43,11 +53,31 @@ public class ReviewsController : ControllerBase
     // =========================================================================
 
     /// <summary>
-    /// Оставить отзыв. Требуется авторизация.
-    /// Отзыв поступает на модерацию (статус Pending).
+    /// Оставить отзыв
     /// </summary>
+    /// <remarks>
+    /// Требуется авторизация. Отзыв поступает на модерацию (статус Pending) —
+    /// он не виден публично до одобрения администратором через `PUT /api/admin/reviews/{id}/approve`.
+    ///
+    /// Пример запроса:
+    ///
+    ///     POST /api/reviews
+    ///     {
+    ///         "rating": 5,
+    ///         "reviewText": "Отличная уборка, всё чисто и аккуратно!",
+    ///         "orderId": 42
+    ///     }
+    ///
+    /// `orderId` — опциональное поле для привязки отзыва к конкретному заказу.
+    /// </remarks>
+    /// <response code="201">Отзыв принят на модерацию</response>
+    /// <response code="400">Ошибка валидации (рейтинг вне диапазона 1–5, пустой текст)</response>
+    /// <response code="401">Не авторизован</response>
     [HttpPost]
     [Authorize]
+    [ProducesResponseType(typeof(ReviewResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ReviewResponse>> Create([FromBody] CreateReviewRequest request)
     {
         var userId = GetCurrentUserId();
