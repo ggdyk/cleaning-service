@@ -17,8 +17,7 @@
 Dockerfile
 .dockerignore
 
-# Claude / документация
-.claude/
+# Документация
 docs/
 
 # Тесты (если появятся)
