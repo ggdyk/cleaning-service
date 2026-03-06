@@ -10,8 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+/// <summary>
+/// Управление услугами клининга. Чтение — публичное. Запись — только Admin.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class ServicesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -25,7 +29,9 @@ public class ServicesController : ControllerBase
     /// Получить список услуг
     /// </summary>
     /// <param name="onlyActive">Если true — только активные услуги (по умолчанию true)</param>
+    /// <response code="200">Список услуг</response>
     [HttpGet]
+    [ProducesResponseType(typeof(List<ServiceDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ServiceDto>>> GetAll(
         [FromQuery] bool onlyActive = true)
     {
@@ -37,7 +43,12 @@ public class ServicesController : ControllerBase
     /// <summary>
     /// Получить услугу по ID
     /// </summary>
+    /// <param name="id">ID услуги</param>
+    /// <response code="200">Данные услуги</response>
+    /// <response code="404">Услуга не найдена</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ServiceDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ServiceDto>> GetById(
         [FromRoute] int id)
     {
@@ -49,8 +60,16 @@ public class ServicesController : ControllerBase
     /// <summary>
     /// Создать услугу (только Admin)
     /// </summary>
+    /// <response code="201">Услуга создана</response>
+    /// <response code="400">Ошибка валидации</response>
+    /// <response code="401">Не авторизован</response>
+    /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(ServiceDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ServiceDto>> Create(
         [FromBody] CreateServiceRequest request)
     {
@@ -62,8 +81,20 @@ public class ServicesController : ControllerBase
     /// <summary>
     /// Обновить услугу (только Admin)
     /// </summary>
+    /// <param name="id">ID услуги</param>
+    /// <param name="request">Новые данные услуги</param>
+    /// <response code="200">Обновлённые данные услуги</response>
+    /// <response code="400">Ошибка валидации</response>
+    /// <response code="401">Не авторизован</response>
+    /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+    /// <response code="404">Услуга не найдена</response>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(ServiceDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ServiceDto>> Update(
         [FromRoute] int id,
         [FromBody] UpdateServiceRequest request)
@@ -76,8 +107,17 @@ public class ServicesController : ControllerBase
     /// <summary>
     /// Удалить услугу (только Admin)
     /// </summary>
+    /// <param name="id">ID услуги</param>
+    /// <response code="204">Услуга удалена</response>
+    /// <response code="401">Не авторизован</response>
+    /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+    /// <response code="404">Услуга не найдена</response>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Delete(
         [FromRoute] int id)
     {
