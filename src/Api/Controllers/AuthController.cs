@@ -12,8 +12,12 @@ using System.Security.Claims;
 
 namespace Api.Controllers;
 
+/// <summary>
+/// Аутентификация и управление сессиями пользователей.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -28,7 +32,26 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Регистрация нового пользователя
     /// </summary>
+    /// <remarks>
+    /// Пример запроса:
+    ///
+    ///     POST /api/auth/register
+    ///     {
+    ///         "email": "ivan@example.com",
+    ///         "password": "Password123!",
+    ///         "firstName": "Иван",
+    ///         "lastName": "Иванов",
+    ///         "phone": "+77771234567",
+    ///         "city": "Алматы"
+    ///     }
+    ///
+    /// После регистрации используйте `POST /api/auth/login` для получения JWT токена.
+    /// </remarks>
+    /// <response code="200">Пользователь успешно зарегистрирован</response>
+    /// <response code="400">Ошибка валидации (email занят, слабый пароль и т.д.)</response>
     [HttpPost("register")]
+    [ProducesResponseType(typeof(RegisterResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RegisterResponse>> Register([FromBody] RegisterRequest request)
     {
         var command = new RegisterUserCommand(request);
@@ -37,9 +60,27 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Вход пользователя
+    /// Вход пользователя — получение JWT и refresh токенов
     /// </summary>
+    /// <remarks>
+    /// Пример запроса:
+    ///
+    ///     POST /api/auth/login
+    ///     {
+    ///         "email": "ivan@example.com",
+    ///         "password": "Password123!"
+    ///     }
+    ///
+    /// Ответ содержит:
+    /// - `accessToken` — JWT токен (срок действия 15 минут), передаётся в заголовке `Authorization: Bearer {token}`
+    /// - `refreshToken` — для обновления пары токенов через `POST /api/auth/refresh`
+    /// - `expiresIn` — срок действия access токена в секундах
+    /// </remarks>
+    /// <response code="200">Успешный вход, токены в теле ответа</response>
+    /// <response code="400">Неверный email или пароль</response>
     [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         var command = new LoginCommand(request);
@@ -48,9 +89,23 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Обновление access token
+    /// Обновление пары токенов по refresh token
     /// </summary>
+    /// <remarks>
+    /// Пример запроса:
+    ///
+    ///     POST /api/auth/refresh
+    ///     {
+    ///         "refreshToken": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    ///     }
+    ///
+    /// Используйте, когда `accessToken` истёк. Выдаётся новая пара токенов, старый refresh token аннулируется.
+    /// </remarks>
+    /// <response code="200">Новая пара токенов</response>
+    /// <response code="400">Refresh token недействителен или истёк</response>
     [HttpPost("refresh")]
+    [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RefreshTokenResponse>> Refresh([FromBody] RefreshTokenRequest request)
     {
         var command = new RefreshTokenCommand(request);
@@ -59,10 +114,18 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Выход пользователя (отзыв refresh токенов)
+    /// Выход пользователя — отзыв всех refresh токенов текущего пользователя
     /// </summary>
+    /// <remarks>
+    /// Требует авторизации (заголовок `Authorization: Bearer {token}`).
+    /// После выхода все refresh токены пользователя аннулируются.
+    /// </remarks>
+    /// <response code="200">Выход выполнен успешно</response>
+    /// <response code="401">Не авторизован</response>
     [Authorize]
     [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> Logout()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
