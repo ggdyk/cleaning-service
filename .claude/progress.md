@@ -95,6 +95,82 @@
 | 2026-03-02 | AddPageEntity       | Таблица Pages                       |
 | 2026-03-03 | AddUserRoleIndex    | Индекс IX_Users_Role                |
 
+## Сделано сегодня (2026-03-06) — продолжение 2
+
+### Задача: Docker Compose стек (phase-6, setup, docs, priority-medium) ✅
+
+**Выполнено:**
+- `docker-compose.yml` — добавлены переменные через `${VAR:-default}`, убран баг с пробелом в строке подключения (`>-` folded scalar)
+- `.env.example` — шаблон со всеми переменными, комментариями и безопасными дефолтами
+- `.env` — создан из шаблона (локально, не коммитится)
+- `.gitignore` — добавлена строка `.env`
+- `docs/api/DOCKER.md` — полная инструкция: быстрый старт, переменные, применение миграций, команды, troubleshooting
+
+**Как работает:**
+- `docker compose up --build` — поднимает postgres + api
+- postgres ждёт healthcheck, api запускается после
+- данные БД в volume `postgres_data` → сохраняются при `docker compose down`
+- `docker compose down -v` → полный сброс с данными
+
+## Сделано сегодня (2026-03-06) — продолжение
+
+### Задача: Dockerfile для API (phase-6, setup, priority-medium) ✅
+
+**Выполнено:**
+- `Dockerfile` — multi-stage build: `sdk:9.0` (build) → `aspnet:9.0-alpine` (runtime)
+  - Слой `dotnet restore` отдельно от исходников → кэш не сбрасывается при изменении кода
+  - Непривилегированный пользователь `appuser` (security best practice)
+  - Итоговый размер образа: **52 MB** (vs ~800 MB с SDK)
+- `.dockerignore` — исключены `bin/`, `obj/`, `.git/`, `.claude/`, IDE-файлы
+- `docker-compose.yml` — добавлен сервис `api`:
+  - `depends_on: postgres: condition: service_healthy` — ждёт готовности БД
+  - `healthcheck` на postgres через `pg_isready`
+  - Все секреты через env-переменные (не в образе)
+  - `ConnectionStrings__DefaultConnection` с hostname `postgres` (имя сервиса в сети compose)
+
+**Проверка:**
+- `docker build` — успешно, 0 ошибок
+- `docker run` — запускается, `Now listening on: http://[::]:8080`
+
+## Сделано сегодня (2026-03-06)
+
+### Задача: Обработка ошибок (phase-6, backend, priority-medium) ✅
+
+**Выполнено:**
+
+1. **`ValidationBehavior<TRequest, TResponse>`** — создан `src/Application/Common/Behaviors/ValidationBehavior.cs`.
+   MediatR pipeline behavior: запускает все FluentValidation валидаторы перед хендлером.
+   **До этого валидаторы существовали, но не вызывались!**
+
+2. **`DependencyInjection.cs` (Application)** — зарегистрирован `ValidationBehavior` через `cfg.AddBehavior(...)`.
+
+3. **`Review.Approve()` / `Review.Reject()`** — `InvalidOperationException` → `BusinessRuleException` (было 500, стало 409).
+
+4. **`Review.Create()`** — `ArgumentException` → `BusinessRuleException` (было 500, стало 409).
+
+5. **`RegisterUserHandler`** — `InvalidOperationException("Email уже зарегистрирован")` → `BusinessRuleException` (было 500, стало 409).
+
+6. **`LoginValidator`** — создан `src/Application/Features/Auth/Login/LoginValidator.cs`.
+   Пустой email/пароль теперь → 400 (было → 401 с невнятным сообщением).
+
+7. **`RefreshTokenValidator`** — создан `src/Application/Features/Auth/RefreshToken/RefreshTokenValidator.cs`.
+   Пустой токен → 400 вместо 401.
+
+8. **Порядок middleware в `Program.cs`** — `ExceptionHandlingMiddleware` перенесён **до** `UseAuthentication/UseAuthorization`, чтобы перехватывать все исключения.
+
+9. **`ExtraServicesController`** — `[Authorize(Roles = "Admin")]` → `[Authorize(Policy = Policies.AdminOnly)]` (унификация).
+
+**Сборка:** 0 ошибок.
+
+**Таблица: что было → что стало**
+| Сценарий | Было | Стало |
+|----------|------|-------|
+| Повторный `Approve`/`Reject` отзыва | 500 | 409 |
+| Регистрация с занятым email | 500 | 409 |
+| Ошибки FluentValidation | не работали | 400 с деталями |
+| `POST /auth/login` с пустыми полями | 401 | 400 |
+| `POST /auth/refresh` с пустым токеном | 401 | 400 |
+
 ## Сделано сегодня (2026-03-03) — продолжение 2
 
 ### Задача 5.4: Реализовать модерацию отзывов (phase-5, backend, priority-medium) ✅
@@ -144,37 +220,6 @@
 - `Application/Resources/ValidationMessages.cs` — маркер-класс
 - `Application/Resources/ValidationMessages.resx` — сообщения валидации (RU, нейтральный)
 - `Application/Resources/ValidationMessages.en.resx` — сообщения валидации (EN)
-
-**Обновлённые файлы:**
-- `Application/Application.csproj` — добавлен `Microsoft.Extensions.Localization 9.0.0`
-- `Application/DependencyInjection.cs` — добавлен `services.AddLocalization()`
-- `Api/Middleware/LanguageMiddleware.cs` — устанавливает `CultureInfo.CurrentCulture + CurrentUICulture`
-- `Api/Middleware/ExceptionHandlingMiddleware.cs` — локализованы: NotFound шаблон, Forbidden, ValidationError заголовок, InternalError
-- `Features/Auth/Register/RegisterRequestValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/FAQ/Admin/CreateFAQ/CreateFAQValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/FAQ/Admin/UpdateFAQ/UpdateFAQValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/Calculator/CalculatePrice/CalculatePriceValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/Orders/CreateOrder/CreateOrderValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/Callbacks/SubmitCallbackRequest/SubmitCallbackRequestValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/ExtraServices/CreateExtraService/CreateExtraServiceValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/ExtraServices/UpdateExtraService/UpdateExtraServiceValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/Reviews/CreateReview/CreateReviewValidator.cs` — `IStringLocalizer<ValidationMessages>`
-- `Features/Auth/Login/LoginHandler.cs` — локализованы: InvalidCredentials, AccountDeactivated
-- `Features/Auth/RefreshToken/RefreshTokenHandler.cs` — локализованы: InvalidRefreshToken, RefreshTokenExpired, UserNotFoundOrDeactivated
-- `Api/Controllers/AuthController.cs` — локализованы: CannotDetermineUser, LogoutSuccess
-
-**Ключи ErrorMessages (11 ключей):** NotFoundTemplate, Forbidden, ValidationError, InternalError, InvalidCredentials, AccountDeactivated, InvalidRefreshToken, RefreshTokenExpired, UserNotFoundOrDeactivated, CannotDetermineUser, LogoutSuccess
-
-**Ключи ValidationMessages (42 ключа):** все сообщения из 9 валидаторов
-
-**Что НЕ локализовано (намеренно):**
-- `BusinessRuleException.Message` — сообщения бизнес-правил живут в Domain entities (RU), их перевод потребует переделки Domain слоя
-
-**Как работает определение языка:**
-1. `?lang=ru` / `?lang=en` — query-параметр (приоритет)
-2. `Accept-Language: en` заголовок
-3. `ru` по умолчанию
-4. `kk` (казахский) → `IStringLocalizer` fallback к нейтральному (RU)
 
 **Сборка:** 0 ошибок, 3 предупреждения (Payment.cs — были до задачи)
 

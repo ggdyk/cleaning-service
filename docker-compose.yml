@@ -1,15 +1,43 @@
-﻿services:
+services:
+
+  # ===========================================================================
+  # PostgreSQL 16
+  # ===========================================================================
   postgres:
     image: postgres:16-alpine
     container_name: cleaning_platform_db
     environment:
-      POSTGRES_DB: cleaning_platform_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: devpassword123
+      POSTGRES_DB: ${POSTGRES_DB:-cleaning_platform_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword123}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # ASP.NET Core API
+  # ===========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cleaning_platform_api
+    ports:
+      - "${API_PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-cleaning_platform_dev};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-devpassword123}"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
