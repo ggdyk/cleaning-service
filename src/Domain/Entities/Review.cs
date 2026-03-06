@@ -1,5 +1,6 @@
 using Domain.Common;
 using Domain.Enums;
+using Domain.Exceptions;
 
 namespace Domain.Entities;
 
@@ -50,7 +51,7 @@ public class Review : BaseEntity
     /// <param name="rating">Оценка от 1 до 5.</param>
     /// <param name="reviewText">Текст отзыва.</param>
     /// <param name="orderId">ID заказа (опционально).</param>
-    /// <exception cref="ArgumentException">Если рейтинг вне диапазона 1–5 или текст пуст.</exception>
+    /// <exception cref="BusinessRuleException">Если рейтинг вне диапазона 1–5 или текст пуст.</exception>
     public static Review Create(
         int userId,
         string authorName,
@@ -59,13 +60,13 @@ public class Review : BaseEntity
         int? orderId = null)
     {
         if (rating < 1 || rating > 5)
-            throw new ArgumentException("Оценка должна быть от 1 до 5.", nameof(rating));
+            throw new BusinessRuleException("Оценка должна быть от 1 до 5.");
 
         if (string.IsNullOrWhiteSpace(authorName))
-            throw new ArgumentException("Имя автора не может быть пустым.", nameof(authorName));
+            throw new BusinessRuleException("Имя автора не может быть пустым.");
 
         if (string.IsNullOrWhiteSpace(reviewText))
-            throw new ArgumentException("Текст отзыва не может быть пустым.", nameof(reviewText));
+            throw new BusinessRuleException("Текст отзыва не может быть пустым.");
 
         return new Review
         {
@@ -83,11 +84,11 @@ public class Review : BaseEntity
     /// Одобрить отзыв. После одобрения он становится публичным.
     /// </summary>
     /// <param name="moderatorId">ID модератора, принявшего решение.</param>
-    /// <exception cref="InvalidOperationException">Если отзыв уже рассмотрен.</exception>
+    /// <exception cref="BusinessRuleException">Если отзыв уже рассмотрен.</exception>
     public void Approve(int moderatorId)
     {
         if (ModerationStatus != ReviewModerationStatus.Pending)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 $"Невозможно одобрить отзыв в статусе '{ModerationStatus}'.");
 
         ModerationStatus = ReviewModerationStatus.Approved;
@@ -99,11 +100,11 @@ public class Review : BaseEntity
     /// Отклонить отзыв. Отклонённый отзыв не отображается на сайте.
     /// </summary>
     /// <param name="moderatorId">ID модератора, принявшего решение.</param>
-    /// <exception cref="InvalidOperationException">Если отзыв уже рассмотрен.</exception>
+    /// <exception cref="BusinessRuleException">Если отзыв уже рассмотрен.</exception>
     public void Reject(int moderatorId)
     {
         if (ModerationStatus != ReviewModerationStatus.Pending)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 $"Невозможно отклонить отзыв в статусе '{ModerationStatus}'.");
 
         ModerationStatus = ReviewModerationStatus.Rejected;
