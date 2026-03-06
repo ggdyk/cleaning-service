@@ -1,0 +1,25 @@
+# Build artifacts
+**/bin/
+**/obj/
+
+# IDE и OS
+.vs/
+.vscode/
+.idea/
+**/.DS_Store
+**/Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Документация
+docs/
+
+# Тесты (если появятся)
+**/*.Tests/
+**/*Tests.csproj

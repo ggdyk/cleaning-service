@@ -5,16 +5,16 @@ using Microsoft.Extensions.Localization;
 
 namespace Application.Features.Auth.Register;
 
-public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
+public class RegisterRequestValidator : AbstractValidator<RegisterUserCommand>
 {
     public RegisterRequestValidator(IStringLocalizer<ValidationMessages> L)
     {
-        RuleFor(x => x.Email)
+        RuleFor(x => x.Request.Email)
             .NotEmpty().WithMessage(L["EmailRequired"])
             .EmailAddress().WithMessage(L["EmailInvalidFormat"])
             .MaximumLength(255).WithMessage(L["EmailMaxLength"]);
 
-        RuleFor(x => x.Password)
+        RuleFor(x => x.Request.Password)
             .NotEmpty().WithMessage(L["PasswordRequired"])
             .MinimumLength(8).WithMessage(L["PasswordMinLength"])
             .MaximumLength(100).WithMessage(L["PasswordMaxLength"])
@@ -22,21 +22,21 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
             .Matches(@"[a-z]").WithMessage(L["PasswordLowerCase"])
             .Matches(@"[0-9]").WithMessage(L["PasswordDigit"]);
 
-        RuleFor(x => x.FirstName)
+        RuleFor(x => x.Request.FirstName)
             .NotEmpty().WithMessage(L["FirstNameRequired"])
             .MaximumLength(100).WithMessage(L["FirstNameMaxLength"]);
 
-        RuleFor(x => x.LastName)
+        RuleFor(x => x.Request.LastName)
             .NotEmpty().WithMessage(L["LastNameRequired"])
             .MaximumLength(100).WithMessage(L["LastNameMaxLength"]);
 
-        RuleFor(x => x.Phone)
+        RuleFor(x => x.Request.Phone)
             .NotEmpty().WithMessage(L["PhoneRequired"])
             .MinimumLength(10).WithMessage(L["PhoneMinLength"])
             .MaximumLength(20).WithMessage(L["PhoneMaxLength"]);
 
-        RuleFor(x => x.City)
+        RuleFor(x => x.Request.City)
             .MaximumLength(100).WithMessage(L["CityMaxLength"])
-            .When(x => !string.IsNullOrEmpty(x.City));
+            .When(x => !string.IsNullOrEmpty(x.Request.City));
     }
 }

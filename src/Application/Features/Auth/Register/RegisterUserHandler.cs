@@ -2,6 +2,7 @@ using Application.DTOs.Auth;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
+using Domain.Exceptions;
 using MediatR;
 
 namespace Application.Features.Auth.Register;
@@ -28,7 +29,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
         // Проверить, что email не занят
         if (await _userRepository.EmailExistsAsync(request.Email))
         {
-            throw new InvalidOperationException($"Email {request.Email} уже зарегистрирован");
+            throw new BusinessRuleException($"Email '{request.Email}' уже зарегистрирован.");
         }
 
         // Хэшировать пароль
