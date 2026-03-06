@@ -187,13 +187,15 @@ if (!app.Environment.IsEnvironment("Testing"))
 
 // Подключаем аутентификацию
 // ⚠️ ДОЛЖНО БЫТЬ ДО UseAuthorization
+// ⚠️ ExceptionHandlingMiddleware должен быть ДО Authentication/Authorization,
+// чтобы перехватывать исключения из любого места пайплайна
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<LanguageMiddleware>();
+
 app.UseAuthentication();
 
 // Подключаем авторизацию
 app.UseAuthorization();
-
-app.UseMiddleware<LanguageMiddleware>();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Маппинг контроллеров
 app.MapControllers();

@@ -1,3 +1,4 @@
+using Api.Authorization;
 using Application.DTOs.ExtraServices;
 using Application.Features.ExtraServices.CreateExtraService;
 using Application.Features.ExtraServices.DeleteExtraService;
@@ -65,7 +66,7 @@ public class ExtraServicesController : ControllerBase
     /// <response code="401">Не авторизован</response>
     /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     [ProducesResponseType(typeof(ExtraServiceDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -87,7 +88,7 @@ public class ExtraServicesController : ControllerBase
     /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
     /// <response code="404">Услуга не найдена</response>
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     [ProducesResponseType(typeof(ExtraServiceDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -108,7 +109,7 @@ public class ExtraServicesController : ControllerBase
     /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
     /// <response code="404">Услуга не найдена</response>
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

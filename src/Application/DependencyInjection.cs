@@ -1,6 +1,8 @@
+using Application.Common.Behaviors;
 using Application.Interfaces;
 using Application.Services;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -9,9 +11,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // Регистрация MediatR
+        // Регистрация MediatR + ValidationBehavior (pipeline)
         services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+        {
+            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
 
         // Регистрация FluentValidation
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
