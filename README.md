@@ -2,6 +2,8 @@
 
 > Backend-платформа для онлайн-заказа клининговых услуг, построенная по принципам **Clean Architecture**, **DDD** и **CQRS**. Реальный production-ready проект, демонстрирующий enterprise-подход к разработке на .NET 9.
 
+![Swagger UI](docs/images/swagger-preview.png)
+
 ---
 
 ## О проекте
@@ -49,6 +51,44 @@
 │  └───────────────────────────────────┘  │
 │           Infrastructure                │  ← EF Core, Repositories, JWT, BCrypt
 └─────────────────────────────────────────┘
+```
+
+```mermaid
+graph TD
+    Client([HTTP Client]) --> Api
+
+    subgraph Api["Api Layer"]
+        MW[Middleware\nExceptionHandling · Language]
+        Auth[Authentication\nJWT Bearer]
+        Ctrl[Controllers\n13 контроллеров]
+    end
+
+    subgraph Application["Application Layer"]
+        VB[ValidationBehavior\nFluentValidation pipeline]
+        CMD[Commands & Queries\n40+ CQRS-фич]
+        IFACE[Interfaces\nIOrderRepository · IUserRepository · ...]
+    end
+
+    subgraph Domain["Domain Layer"]
+        ENT[Entities\nOrder · User · Review · ...]
+        EXC[Exceptions\nBusinessRule · NotFound · Forbidden]
+        DEVT[Domain Events]
+    end
+
+    subgraph Infrastructure["Infrastructure Layer"]
+        REPO[Repositories\nEF Core реализации]
+        DB[(PostgreSQL 16\n7 схем)]
+        JWT_SVC[JwtService\nBCrypt · TokenGenerator]
+    end
+
+    Api --> Application
+    Application --> Domain
+    Infrastructure --> Domain
+    Api --> Infrastructure
+
+    REPO --> DB
+    CMD --> IFACE
+    IFACE -.->|реализует| REPO
 ```
 
 **Ключевые принципы, реализованные в коде:**
